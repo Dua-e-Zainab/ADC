@@ -1,336 +1,322 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import axios from "axios";
 import {
-  User, Lock, Eye, EyeOff, AlertCircle, ArrowLeft, ArrowRight,
-  Building2, Landmark, ShieldCheck, CheckCircle2, ChevronRight, Sparkles, Loader2
+  User, Lock, Eye, EyeOff, ArrowLeft, ArrowRight,
+  Building2, Landmark, ShieldCheck, AlertCircle,
+  Loader2, CheckCircle2
 } from "lucide-react";
 import ublLogo from "../../assets/ubl logo.png";
 
-const SITE_CFG = {
-  KHI: {
-    city: "Karachi",
-    tag: "",
-    primary: "#1D4ED8",
-    gradient: "linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)",
-    accentLight: "#EFF6FF",
-    border: "#BFDBFE",
-    shadow: "rgba(29, 78, 216, 0.25)",
-    icon: Building2
-  },
-  LHE: {
-    city: "Lahore",
-    tag: "",
-    primary: "#7C3AED",
-    gradient: "linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%)",
-    accentLight: "#F5F3FF",
-    border: "#DDD6FE",
-    shadow: "rgba(124, 58, 237, 0.25)",
-    icon: Landmark
-  }
+const SITES = {
+  KHI: { city: "Karachi", icon: Building2 },
+  LHE: { city: "Lahore", icon: Landmark }
 };
 
-const FormInput = ({ label, icon: Icon, error, endAction, disabled, ...props }) => {
-  const [focused, setFocused] = useState(false);
-
-  return (
-    <div style={{ marginBottom: 16 }}>
-      {label && (
-        <label style={{ fontSize: 11, fontWeight: 700, color: "#334155", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-          {label}
-        </label>
-      )}
-      <div style={{ position: "relative" }}>
-        {Icon && (
-          <Icon
-            size={18}
-            style={{
-              position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)",
-              color: error ? "#EF4444" : focused ? "#1D4ED8" : "#94A3B8",
-              transition: "color 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
-            }}
-          />
-        )}
-        <input
-          {...props}
-          disabled={disabled}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          style={{
-            width: "100%", height: 48, padding: endAction ? "0 44px 0 46px" : "0 16px 0 46px",
-            borderRadius: 24,
-            border: `1.5px solid ${error ? "#EF4444" : focused ? "#1D4ED8" : "#E2E8F0"}`,
-            fontSize: 14, color: "#0F172A", outline: "none",
-            background: focused ? "#FFFFFF" : "#F8FAFC", fontWeight: 500,
-            boxShadow: focused ? "0 0 0 4px rgba(29, 78, 216, 0.12)" : "none",
-            transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-            boxSizing: "border-box"
-          }}
-        />
-        {endAction}
-      </div>
-    </div>
-  );
+const css = {
+  page: { minHeight: "100vh", display: "flex", flexDirection: "column", background: "radial-gradient(circle at 85% 15%, #ECF3FB 0%, #F4F7FA 60%, #E9F0F8 100%)", fontFamily: "'Inter', sans-serif", color: "#18324B", overflow: "hidden" },
+  header: { height: 72, padding: "0 36px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,255,255,.85)", backdropFilter: "blur(12px)", borderBottom: "1px solid #E2E8F0" },
+  brand: { display: "flex", alignItems: "center", gap: 14 },
+  logo: { width: 44, height: 44, objectFit: "contain" },
+  main: { flex: 1, width: "min(1100px, calc(100% - 40px))", margin: "auto", display: "grid", gridTemplateColumns: "1fr 450px", alignItems: "center", gap: 50, padding: "40px 0" },
+  hero: { maxWidth: 500 },
+  heroLogo: { width: 100, height: 100, padding: 10, marginBottom: 28, background: "#fff", border: "1px solid #DCE5ED", borderRadius: 18, objectFit: "contain", boxShadow: "0 12px 32px rgba(0,96,189,.10)" },
+  eyebrow: { color: "#0060BD", fontSize: 12, fontWeight: 800, letterSpacing: 1.6, textTransform: "uppercase" },
+  title: { margin: "12px 0 16px", fontSize: 48, lineHeight: 1.08, fontWeight: 800, letterSpacing: "-1.2px", color: "#16344F" },
+  blue: { display: "block", color: "#0060BD" },
+  desc: { maxWidth: 460, color: "#526478", fontSize: 16, lineHeight: 1.65, marginBottom: 28 },
+  features: { display: "flex", gap: 24, color: "#475569", fontSize: 13.5, fontWeight: 600, flexWrap: "wrap" },
+  feature: { display: "flex", alignItems: "center", gap: 8 },
+  card: { padding: "42px 38px", background: "#fff", border: "1px solid #E2E8F0", borderRadius: 20, boxShadow: "0 20px 40px -15px rgba(15,35,60,.08),0 1px 3px rgba(0,0,0,.02)" },
+  small: { display: "block", color: "#0060BD", fontSize: 12, fontWeight: 800, letterSpacing: 1.4, marginBottom: 6 },
+  h2: { margin: "0 0 8px", fontSize: 28, fontWeight: 800, letterSpacing: "-.6px", color: "#0F2942" },
+  muted: { margin: "0 0 28px", color: "#526478", fontSize: 14.5, lineHeight: 1.5 },
+  input: { height: 52, display: "flex", alignItems: "center", gap: 14, padding: "0 18px", marginTop: 8, border: "1.5px solid #CBD5E1", borderRadius: 12, background: "#FAFCFE" },
+  field: { width: "100%", border: 0, outline: 0, background: "transparent", fontFamily: "'Inter', sans-serif", fontSize: 15, color: "#18324B" },
+  label: { display: "block", marginTop: 18, color: "#475569", fontSize: 11.5, fontWeight: 800, letterSpacing: 1 },
+  site: { height: 84, padding: "0 22px", display: "flex", alignItems: "center", gap: 18, width: "100%", textAlign: "left", cursor: "pointer", background: "#fff", border: "1.5px solid #E2E8F0", borderRadius: 16, transition: ".2s" },
+  icon: { width: 50, height: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "#F1F5F9", color: "#475569", borderRadius: 14, flexShrink: 0 },
+  primary: { width: "100%", height: 54, marginTop: 24, border: 0, borderRadius: 14, background: "linear-gradient(135deg,#0068D6,#004FA8)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 8px 22px rgba(0,96,189,.24)" }
 };
+
+// Extracted outside to prevent input re-creation/focus loss on render
+const FormInput = ({ isPassword, value, disabled, showPass, setShowPass, onChange }) => (
+  <div className="input" style={css.input}>
+    {isPassword ? <Lock size={19} color="#64748B" /> : <User size={19} color="#64748B" />}
+    <input
+      style={css.field}
+      type={isPassword && !showPass ? "password" : "text"}
+      value={value}
+      disabled={disabled}
+      placeholder={isPassword ? "Enter your password" : "Enter your username"}
+      onChange={onChange}
+    />
+    {isPassword && (
+      <button type="button" onClick={() => setShowPass(v => !v)} className="eye">
+        {showPass ? <EyeOff size={19} /> : <Eye size={19} />}
+      </button>
+    )}
+  </div>
+);
 
 export default function Login({ onLogin }) {
   const [step, setStep] = useState(1);
-  const [sel, setSel] = useState("");
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [form, setForm] = useState({
-    user: "",
-    pass: "",
-    showPass: false,
-    err: "",
-  });
+  const [site, setSite] = useState("KHI");
+  const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const [animatingOut, setAnimatingOut] = useState(false);
+  const [form, setForm] = useState({ user: "", pass: "", err: "" });
 
-  const cfg = SITE_CFG[sel] || SITE_CFG.KHI;
+  const selected = SITES[site];
+  const SelectedIcon = selected.icon;
 
-  const updateForm = useCallback((key, val) => {
-    setForm(f => ({ ...f, [key]: val, err: "" }));
-  }, []);
+  const changeStep = next => {
+    setAnimatingOut(true);
+    setTimeout(() => {
+      setStep(next);
+      setAnimatingOut(false);
+    }, 220);
+  };
 
-  const handleAuth = async (e) => {
+  const update = (key, value) => setForm(f => ({ ...f, [key]: value, err: "" }));
+
+  const login = async e => {
     e.preventDefault();
-    if (isAuthenticating) return;
+    if (loading) return;
 
-    const cleanUser = form.user.trim();
-    const cleanPass = form.pass.trim();
+    const username = form.user.trim();
+    const password = form.pass.trim();
 
-    if (!cleanUser || !cleanPass) {
-      return setForm(f => ({ ...f, err: "Please fill out all authentication fields." }));
+    if (!username || !password) {
+      return update("err", "Please enter your username and password.");
     }
 
-    setIsAuthenticating(true);
-
+    setLoading(true);
     try {
-      const res = await axios.post("/api/auth/login", {
-        username: cleanUser,
-        password: cleanPass,
-      });
-
-      // Use the site tied to the authenticated account from the server,
-      // not just the card the user happened to click on step 1.
-      onLogin(res.data.user.site);
+      const { data } = await axios.post("/api/auth/login", { username, password });
+      onLogin(data.user);
     } catch (err) {
       setForm(f => ({
         ...f,
         pass: "",
-        err: err.response?.data?.error || "Invalid credentials. Please verify and retry.",
+        err: err.response?.data?.error || "Invalid credentials. Please try again."
       }));
     } finally {
-      setIsAuthenticating(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%)", display: "flex", flexDirection: "column", fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
-      <header style={{ padding: "20px 32px", display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#1E40AF", background: "#EFF6FF", padding: "8px 16px", borderRadius: 30, fontWeight: 600, border: "1px solid #BFDBFE", boxShadow: "0 2px 8px rgba(0,0,0,0.02)" }}>
-          <ShieldCheck size={16} /> Encrypted Session
+    <div style={css.page}>
+      <header style={css.header}>
+        <div style={css.brand}>
+          <img src={ublLogo} alt="UBL" style={css.logo} />
+          <div>
+            <b style={{ fontSize: 13.5, fontWeight: 800 }}>UNITED BANK LIMITED</b>
+            <div style={{ fontSize: 11, color: "#64748B" }}></div>
+          </div>
         </div>
+        <span className="secure">
+          <ShieldCheck size={18} color="#0060BD" /> 
+        </span>
       </header>
 
-      <main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
-        <div style={{ width: "100%", maxWidth: step === 1 ? 520 : 880, background: "#FFFFFF", borderRadius: 32, padding: 32, boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.12)", border: "1px solid #E2E8F0", transition: "all 0.35s cubic-bezier(0.4, 0, 0.2, 1)" }}>
+      <main style={css.main} className="main">
+        <section style={css.hero} className="hero">
+          <img src={ublLogo} alt="UBL" style={css.heroLogo} className="hero-logo" />
+          <div style={css.eyebrow} className="hero-eyebrow">ALTERNATE DELIVERY CHANNEL (ADC)</div>
+          <h1 style={css.title} className="hero-title">
+            Plastic Inventory <span style={css.blue} className="hero-blue">Management System</span>
+          </h1>
+          <p style={css.desc} className="hero-desc">
+            Centralized inventory management and operational tracking for UBL plastic card operations.
+          </p>
+          <div style={css.features} className="hero-features">
+            {[[ShieldCheck, "Secure Access"], [Building2, "Multi-Site"], [Lock, "Audited"]].map(([Icon, text]) => (
+              <span key={text} style={css.feature}>
+                <Icon size={18} color="#0060BD" /> {text}
+              </span>
+            ))}
+          </div>
+        </section>
 
+        <section style={css.card} className="card">
           {step === 1 ? (
-            <div>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", marginBottom: 28 }}>
-                <div style={{ width: 110, height: 110, borderRadius: 28, background: "#FFFFFF", border: "1.5px solid #BFDBFE", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, boxShadow: "0 10px 25px -5px rgba(29, 78, 216, 0.15)", padding: 12 }}>
-                  <img src={ublLogo} alt="UBL" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                </div>
-                <h1 style={{ fontSize: 26, fontWeight: 800, color: "#0F172A", margin: 0, letterSpacing: "-0.5px" }}>UBL CardStock</h1>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: "#0F172A" }}>Select Location Node</h2>
-                <div style={{ background: "#EFF6FF", padding: "4px 10px", borderRadius: 16, fontSize: 11, fontWeight: 700, color: "#1E40AF", border: "1px solid #BFDBFE", display: "flex", alignItems: "center", gap: 4 }}>
-                  <Sparkles size={12} /> Live
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gap: 14, marginBottom: 24 }}>
-                {Object.entries(SITE_CFG).map(([key, site]) => {
-                  const Icon = site.icon;
-                  const active = sel === key;
+            <div className={animatingOut ? "out-left" : "in-right"}>
+              <span style={css.small}>ACCESS PORTAL</span>
+              <h2 style={css.h2}>Select Operational Site</h2>
+              <p style={css.muted}>Choose the location you are authorized to access.</p>
+              <div className="sites">
+                {Object.entries(SITES).map(([key, item]) => {
+                  const Icon = item.icon;
+                  const active = site === key;
                   return (
-                    <div
+                    <button
                       key={key}
-                      onClick={() => setSel(key)}
-                      style={{
-                        padding: 18, borderRadius: 24,
-                        background: active ? site.gradient : "#F8FAFC",
-                        color: active ? "#FFFFFF" : "#0F172A",
-                        cursor: "pointer", display: "flex", alignItems: "center", gap: 16,
-                        border: `1.5px solid ${active ? "transparent" : "#E2E8F0"}`,
-                        transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-                        boxShadow: active ? `0 12px 24px -6px ${site.shadow}` : "none",
-                        transform: active ? "translateY(-2px)" : "translateY(0)"
-                      }}
+                      className={`site-btn ${active ? "active" : ""}`}
+                      style={css.site}
+                      onClick={() => { setSite(key); changeStep(2); }}
                     >
-                      <div style={{
-                        width: 46, height: 46, borderRadius: 16,
-                        background: active ? "rgba(255, 255, 255, 0.2)" : site.accentLight,
-                        color: active ? "#FFFFFF" : site.primary,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        transition: "all 0.25s ease"
-                      }}>
-                        <Icon size={22} />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <strong style={{ fontSize: 15, display: "block", fontWeight: 700, color: active ? "#FFFFFF" : "#0F172A" }}>
-                          {site.city}
-                        </strong>
-                        <span style={{ fontSize: 12, opacity: active ? 0.9 : 0.75, color: active ? "#FFFFFF" : "#475569" }}>{site.tag}  {key}</span>
-                      </div>
-                      <div style={{
-                        width: 28, height: 28, borderRadius: 14,
-                        background: active ? "rgba(255, 255, 255, 0.2)" : "#E2E8F0",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        transition: "all 0.25s ease"
-                      }}>
-                        <ChevronRight size={16} color={active ? "#FFFFFF" : "#64748B"} />
-                      </div>
-                    </div>
+                      <span className="site-icon" style={{ ...css.icon, ...(active ? { background: "#0060BD", color: "#fff" } : {}) }}>
+                        <Icon size={24} />
+                      </span>
+                      <span style={{ flex: 1 }}>
+                        <b style={{ display: "block", fontSize: 17, color: "#0F2942" }}>{item.city}</b>
+                        <small style={{ color: "#64748B", fontSize: 13 }}>{item.region}</small>
+                      </span>
+                      {active ? (
+                        <span className="check"><CheckCircle2 size={20} /></span>
+                      ) : (
+                        <span className="site-arrow"><span>{key}</span><ArrowRight size={18} /></span>
+                      )}
+                    </button>
                   );
                 })}
               </div>
-
-              <button
-                disabled={!sel}
-                onClick={() => setStep(2)}
-                style={{
-                  width: "100%", height: 52, borderRadius: 26, border: "none",
-                  background: sel ? cfg.gradient : "#E2E8F0",
-                  color: sel ? "#FFFFFF" : "#64748B",
-                  fontSize: 15, fontWeight: 700, cursor: sel ? "pointer" : "not-allowed",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                  boxShadow: sel ? `0 8px 20px -4px ${cfg.shadow}` : "none",
-                  transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-                  transform: sel ? "scale(1)" : "scale(0.99)"
-                }}
-              >
-                Proceed to Terminal <ArrowRight size={18} />
-              </button>
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1.1fr", gap: 20, minHeight: 460 }}>
-              <div style={{ background: cfg.gradient, borderRadius: 24, padding: 28, color: "#FFFFFF", display: "flex", flexDirection: "column", justifyContent: "space-between", boxShadow: `0 12px 24px -6px ${cfg.shadow}`, transition: "all 0.35s ease" }}>
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => { setStep(1); updateForm("err", ""); }}
-                    style={{
-                      background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)",
-                      color: "#FFFFFF", padding: "8px 16px", borderRadius: 20,
-                      cursor: "pointer", fontSize: 12, fontWeight: 600,
-                      display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 32,
-                      backdropFilter: "blur(4px)", transition: "all 0.25s ease"
-                    }}
-                  >
-                    <ArrowLeft size={14} /> Back
-                  </button>
-                  <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "1px", opacity: 0.9, fontWeight: 700, display: "block", marginBottom: 4 }}>
-                    {cfg.tag}
-                  </span>
-                  <h3 style={{ fontSize: 28, fontWeight: 800, margin: "0 0 12px", letterSpacing: "-0.5px" }}>{cfg.city} </h3>
-                  <p style={{ fontSize: 13, opacity: 0.9, lineHeight: 1.6, margin: 0 }}>
-                    Enter authorized credentials to proceed to the {cfg.city} terminal.
-                  </p>
-                </div>
+            <div className={animatingOut ? "out-right" : "in-left"}>
+              <button onClick={() => changeStep(1)} className="back">
+                <ArrowLeft size={16} /> Back to Site Selection
+              </button>
 
-                <div style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", padding: 16, borderRadius: 20, backdropFilter: "blur(12px)", display: "flex", flexDirection: "column", gap: 10 }}>
-                  {["Shared Ledger Synchronization", "Real-Time Stock Audit Logs", "Multi-Branch Access Control"].map(text => (
-                    <div key={text} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12, fontWeight: 500 }}>
-                      <CheckCircle2 size={16} style={{ color: "#BFDBFE" }} /> {text}
-                    </div>
-                  ))}
-                </div>
+              <div className="selected-site">
+                <span style={{ ...css.icon, width: 42, height: 42, background: "#0060BD", color: "#fff" }}>
+                  <SelectedIcon size={20} />
+                </span>
+                <span style={{ flex: 1 }}>
+                  <small>AUTHORIZED SITE</small>
+                  <b>{selected.city} Operations Hub</b>
+                </span>
+                <span className="tag">{site}</span>
               </div>
 
-              <form onSubmit={handleAuth} style={{ background: "#FAFAFA", borderRadius: 24, padding: 28, display: "flex", flexDirection: "column", justifyContent: "center", border: "1px solid #F1F5F9" }}>
-                <h3 style={{ fontSize: 20, fontWeight: 800, margin: "0 0 4px", color: "#0F172A" }}>
-                  Authenticate
-                </h3>
-                <p style={{ fontSize: 12, color: "#475569", margin: "0 0 18px" }}>
-                  Enter credentials for this terminal.
-                </p>
+              <span style={css.small}>SECURE SIGN-IN</span>
+              <h2 style={css.h2}>Welcome Back</h2>
+              <p style={css.muted}>Enter your credentials to access the portal.</p>
 
+              <form onSubmit={login}>
+                <label style={css.label}>USERNAME</label>
                 <FormInput
-                  label="Username"
-                  icon={User}
-                  error={form.err}
-                  disabled={isAuthenticating}
                   value={form.user}
-                  onChange={e => updateForm("user", e.target.value)}
-                  placeholder="Enter your username"
+                  disabled={loading}
+                  onChange={e => update("user", e.target.value)}
                 />
 
+                <label style={css.label}>PASSWORD</label>
                 <FormInput
-                  label="Password"
-                  icon={Lock}
-                  error={form.err}
-                  disabled={isAuthenticating}
-                  type={form.showPass ? "text" : "password"}
+                  isPassword
                   value={form.pass}
-                  onChange={e => updateForm("pass", e.target.value)}
-                  placeholder="••••••••"
-                  endAction={
-                    <button
-                      type="button"
-                      onClick={() => updateForm("showPass", !form.showPass)}
-                      style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#64748B", transition: "color 0.2s ease" }}
-                    >
-                      {form.showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  }
+                  disabled={loading}
+                  showPass={showPass}
+                  setShowPass={setShowPass}
+                  onChange={e => update("pass", e.target.value)}
                 />
 
                 {form.err && (
-                  <div style={{ background: "#FEF2F2", border: "1px solid #FCA5A5", borderRadius: 16, padding: "10px 14px", fontSize: 12, color: "#991B1B", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
-                    <AlertCircle size={16} /> {form.err}
-                  </div>
+                  <div className="error"><AlertCircle size={18} />{form.err}</div>
                 )}
 
                 <button
                   type="submit"
-                  disabled={isAuthenticating}
-                  style={{
-                    width: "100%", height: 48, borderRadius: 24, border: "none",
-                    background: cfg.gradient, color: "#FFFFFF", fontSize: 14, fontWeight: 700,
-                    cursor: isAuthenticating ? "wait" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    marginTop: 6, boxShadow: `0 8px 20px -4px ${cfg.shadow}`, transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-                    opacity: isAuthenticating ? 0.8 : 1
-                  }}
+                  disabled={loading}
+                  style={{ ...css.primary, opacity: loading ? 0.8 : 1 }}
+                  className="primary"
                 >
-                  {isAuthenticating ? (
-                    <>
-                      <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />
-                      Authenticating...
-                    </>
+                  {loading ? (
+                    <><Loader2 size={20} className="spin" /> Authenticating...</>
                   ) : (
-                    <>
-                      Access Terminal <ArrowRight size={16} />
-                    </>
+                    <><Lock size={17} /> Sign in to Core IMS <ArrowRight size={18} /></>
                   )}
                 </button>
               </form>
+
+              <div className="security">
+                <ShieldCheck size={15} color="#0060BD" /> Encrypted Session • Internal Access Only
+              </div>
             </div>
           )}
-
-        </div>
+        </section>
       </main>
 
-      <footer style={{ padding: "16px 0 24px", textAlign: "center" }}>
-        <span style={{ fontSize: 11, color: "#475569", background: "#FFFFFF", padding: "6px 18px", borderRadius: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.02)", fontWeight: 500, border: "1px solid #E2E8F0" }}>
-          United Bank Limited © 2026 Core IMS
-        </span>
+      <footer style={{ paddingLeft: "15px" }}>
+        UNITED BANK LIMITED • Core Inventory Management System • © 2026
       </footer>
 
       <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        .hero { animation: heroIn .8s cubic-bezier(.16,1,.3,1) both; }
+        .hero-logo { animation: logoIn .7s .05s cubic-bezier(.16,1,.3,1) both; }
+        .hero-eyebrow { animation: textIn .5s .15s cubic-bezier(.16,1,.3,1) both; }
+        .hero-title { animation: titleIn .7s .25s cubic-bezier(.16,1,.3,1) both; }
+        .hero-blue { animation: revealBlue .8s .38s cubic-bezier(.16,1,.3,1) both; }
+        .hero-desc { animation: textIn .55s .52s cubic-bezier(.16,1,.3,1) both; }
+        .hero-features { animation: textIn .55s .62s cubic-bezier(.16,1,.3,1) both; }
+        .card { animation: cardIn .7s .2s cubic-bezier(.16,1,.3,1) both; }
+
+        @keyframes heroIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes logoIn { from { opacity: 0; transform: translateY(18px) scale(.88); } to { opacity: 1; transform: none; } }
+        @keyframes textIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+        @keyframes titleIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+        @keyframes revealBlue { from { opacity: 0; transform: translateY(20px); clip-path: inset(0 100% 0 0); } to { opacity: 1; transform: none; clip-path: inset(0); } }
+        @keyframes cardIn { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+
+        .sites { display: flex; flex-direction: column; gap: 18px; }
+        .site-btn:hover { border-color: #0060BD !important; background: #F8FAFC !important; transform: translateY(-1px); box-shadow: 0 7px 18px rgba(0,96,189,.08); }
+        .site-icon { transition: .2s; }
+        .check { width: 28px; height: 28px; border-radius: 50%; display: flex; alignItems: center; justifyContent: center; background: #0060BD; color: #fff; animation: pop .25s cubic-bezier(.175,.885,.32,1.275); }
+        .site-arrow { display: flex; alignItems: center; gap: 10px; color: #94A3B8; }
+        .site-arrow span, .tag { padding: 5px 12px; border-radius: 8px; background: #F1F5F9; color: #475569; font-size: 12px; font-weight: 700; }
+
+        .selected-site { display: flex; alignItems: center; gap: 14px; margin-bottom: 24px; padding: 14px 18px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; }
+        .selected-site small { display: block; color: #64748B; font-size: 10px; font-weight: 700; letter-spacing: .6px; margin-bottom: 3px; }
+        .selected-site b { color: #0F2942; font-size: 14.5px; }
+
+        .back, .eye { border: 0; background: none; cursor: pointer; color: #64748B; }
+        .back { display: flex; gap: 6px; alignItems: center; padding: 0; margin-bottom: 20px; font-size: 13px; font-weight: 600; }
+        .back:hover { color: #0060BD; }
+
+        .primary { transition: .2s; }
+        .primary:hover:not(:disabled) { background: linear-gradient(135deg,#0072EC,#0059C1) !important; box-shadow: 0 10px 24px rgba(0,96,189,.35); transform: translateY(-1px); }
+
+        .input { transition: .2s; }
+        .input:focus-within { border-color: #0060BD !important; background: #fff !important; box-shadow: 0 0 0 3.5px rgba(0,96,189,.12); }
+
+        .error { display: flex; gap: 10px; alignItems: center; margin-top: 16px; padding: 14px; color: #991B1B; background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 12px; font-size: 13px; }
+        .security { margin-top: 24px; padding-top: 18px; border-top: 1px solid #F1F5F9; display: flex; alignItems: center; justifyContent: center; color: #94A3B8; font-size: 11.5px; }
+
+        .spin { animation: spin .8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .in-right { animation: inRight .3s cubic-bezier(.16,1,.3,1); }
+        .in-left { animation: inLeft .3s cubic-bezier(.16,1,.3,1); }
+        .out-left { animation: outLeft .22s ease forwards; }
+        .out-right { animation: outRight .22s ease forwards; }
+
+        @keyframes inRight { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+        @keyframes inLeft { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: none; } }
+        @keyframes outLeft { to { opacity: 0; transform: translateX(-16px); } }
+        @keyframes outRight { to { opacity: 0; transform: translateX(16px); } }
+
+        @media (max-width: 850px) {
+          .main { grid-template-columns: 1fr !important; gap: 36px !important; max-width: 650px; padding: 30px 0 !important; }
+        }
+
+        @media (max-width: 600px) {
+          .main { width: calc(100% - 28px) !important; padding: 25px 0 !important; gap: 28px !important; }
+          header { height: 64px !important; padding: 0 18px !important; }
+          .secure { display: none !important; }
+          .hero { text-align: center; }
+          .hero-logo { width: 78px !important; height: 78px !important; margin-bottom: 22px !important; }
+          .hero-title { font-size: 34px !important; }
+          .hero-desc { font-size: 14px !important; margin-left: auto; margin-right: auto; }
+          .hero-features { justify-content: center; gap: 15px !important; font-size: 12px !important; }
+          .card { padding: 28px 22px !important; border-radius: 17px !important; }
+          footer { padding: 15px 10px; font-size: 9.5px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
         }
       `}</style>
     </div>

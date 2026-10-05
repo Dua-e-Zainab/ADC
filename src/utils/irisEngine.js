@@ -1,5 +1,133 @@
-
 import { CAT } from '../constants/catalog';
+import * as XLSX from "xlsx";
+
+const REQUIRED_DAILY_STOCK_HEADERS = [
+  "IRIS Product Code",
+  "IRIS Product Descreption",
+  "IRIS Product Name",
+  "Batch Count",
+  "BATCH_NUMBER",
+  "STOCK RECEIVED FROM VENDOR",
+  "EXTRA COUNT",
+  "TOTAL",
+  "DAMAGED",
+  "TRANSFER",
+  "BUSINESS/TEST",
+  "PAGE SIZE",
+ 
+];
+
+export async function validateDailyStockHeaders(file) {
+  const buffer = await file.arrayBuffer();
+
+  const workbook = XLSX.read(buffer, {
+    type: "array",
+    cellDates: true,
+  });
+
+  if (!workbook.SheetNames.length) {
+    return {
+      valid: false,
+      missing: REQUIRED_DAILY_STOCK_HEADERS,
+      headers: [],
+    };
+  }
+
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+  const rows = XLSX.utils.sheet_to_json(sheet, {
+    header: 1,
+    defval: "",
+    blankrows: false,
+  });
+
+  if (!rows.length) {
+    return {
+      valid: false,
+      missing: REQUIRED_DAILY_STOCK_HEADERS,
+      headers: [],
+    };
+  }
+
+  const headers = rows[0]
+    .map((header) => String(header ?? "").trim())
+    .filter(Boolean);
+
+  // Case-insensitive comparison
+  const normalizedHeaders = new Set(
+    headers.map((header) => header.toLowerCase())
+  );
+
+  const missing = REQUIRED_DAILY_STOCK_HEADERS.filter(
+    (required) => !normalizedHeaders.has(required.toLowerCase())
+  );
+
+  return {
+    valid: missing.length === 0,
+    missing,
+    headers,
+  };
+}
+
+const REQUIRED_BALANCE_HEADERS = [
+  "IRIS Product Descreption",
+  "Plastic Type",
+  "PAYMENT SCHEME",
+  "CLOSING BALANCE",
+];
+
+export async function validateBalanceHeaders(file) {
+  const buffer = await file.arrayBuffer();
+
+  const workbook = XLSX.read(buffer, {
+    type: "array",
+  });
+
+  if (!workbook.SheetNames.length) {
+    return {
+      valid: false,
+      missing: REQUIRED_BALANCE_HEADERS,
+      headers: [],
+    };
+  }
+
+  // Check the first sheet for the headers
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+  const rows = XLSX.utils.sheet_to_json(sheet, {
+    header: 1,
+    defval: "",
+    blankrows: false,
+  });
+
+  if (!rows.length) {
+    return {
+      valid: false,
+      missing: REQUIRED_BALANCE_HEADERS,
+      headers: [],
+    };
+  }
+
+  const headers = rows[0]
+    .map((header) => String(header ?? "").trim())
+    .filter(Boolean);
+
+  // Case-insensitive comparison
+  const normalizedHeaders = new Set(
+    headers.map((header) => header.toLowerCase())
+  );
+
+  const missing = REQUIRED_BALANCE_HEADERS.filter(
+    (required) => !normalizedHeaders.has(required.toLowerCase())
+  );
+
+  return {
+    valid: missing.length === 0,
+    missing,
+    headers,
+  };
+}
+
 
 function buildSubProductIndex() {
   const idx = {};

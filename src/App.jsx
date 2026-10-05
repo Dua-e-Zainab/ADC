@@ -20,16 +20,39 @@ import ReportsTab from "./components/tabs/ReportsTab";
 import ForecastTab from "./components/tabs/ForecastTab";
 import ConsumablesTab from "./components/tabs/ConsumblesTab";
 import CertificateTab from "./components/tabs/CertificatesTab";
-import axios from "axios";
+import UserManagementTab from "./components/tabs/Usermaanagementtab";
+import OrderApprovalsPanel from "./components/tabs/Orderapprovalspanel";
+import DashboardTab from "./components/tabs/DashboardTab";
+import axios from "axios"; 
 
 // Reusable Layout Styles
 const styles = {
-  container: { display: "flex", minHeight: "100vh", background: C.surface, fontFamily: "'DM Sans', sans-serif" },
-  mainWrapper: { marginLeft: 240, flex: 1, display: "flex", flexDirection: "column", minHeight: "100vh" },
+  container: {
+    display: "flex",
+    minHeight: "100vh",
+    background: C.surface,
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+  },
+
+  mainWrapper: {
+    marginLeft: 240,
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    minHeight: "100vh"
+  },
+
   header: {
-    height: 52, background: "#fff", borderBottom: `1px solid ${C.border}`,
-    display: "flex", alignItems: "center", justifyContent: "space-between",
-    padding: "0 24px", position: "sticky", top: 0, zIndex: 100
+    height: 52,
+    background: "#fff",
+    borderBottom: `1px solid ${C.border}`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "0 24px",
+    position: "sticky",
+    top: 0,
+    zIndex: 100
   },
   headerFlex: { display: "flex", alignItems: "center", gap: 8 },
   badge: {
@@ -44,6 +67,12 @@ const styles = {
 
 export default function App() {
   const [currentSite, setCurrentSite] = useState(null);
+  // Full session user ({ id, username, site, role }) — needed so we know
+  // whether to show admin-only UI (User Management tab, approval bell).
+  const [currentUser, setCurrentUser] = useState(null);
+  const isAdmin = currentUser?.role === "admin";
+  // console.log("DEBUG currentUser:", currentUser, "isAdmin:", isAdmin);
+
   const [checkingSession, setCheckingSession] = useState(true);
   const [tab, setTab] = useState("entry");
   const [modal, setModal] = useState(null);
@@ -72,6 +101,7 @@ export default function App() {
   // Centralized State Reset
   const resetAppData = useCallback(() => {
     setCurrentSite(null);
+    setCurrentUser(null);
     setTab("entry");
     setAllEntries([]);
     setClosing({});
@@ -151,14 +181,19 @@ export default function App() {
   }, [normalizeEntry, normalizeTransit, showAlert]);
 
   // Check for an existing server session on load (page refresh, revisit, etc.)
+  // NOTE: this used to be duplicated as two separate useEffects hitting
+  // "/auth/me" and "/api/auth/me" respectively — merged into one here, and
+  // now also captures the full user object (site + role) instead of just site.
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const res = await axios.get("/auth/me");
-        const site = res.data.user.site;
-        setCurrentSite(site);
-        await loadSharedData(site, true);
+        const res = await axios.get("/api/auth/me");
+        const user = res.data.user;
+        setCurrentUser(user);
+        setCurrentSite(user.site);
+        await loadSharedData(user.site, true);
       } catch {
+        setCurrentUser(null);
         setCurrentSite(null);
       } finally {
         setCheckingSession(false);
@@ -169,10 +204,13 @@ export default function App() {
   }, []);
 
   // Event Handlers
-  const handleLogin = useCallback(async (site) => {
-    setCurrentSite(site);
+  // Login now passes the full user object (see Login.jsx: onLogin(res.data.user)
+  // instead of onLogin(res.data.user.site)) so we can capture role here too.
+  const handleLogin = useCallback(async (user) => {
+    setCurrentUser(user);
+    setCurrentSite(user.site);
     setTab("entry");
-    await loadSharedData(site, true);
+    await loadSharedData(user.site, true);
   }, [loadSharedData]);
 
   const handleSiteChange = useCallback((site) => {
@@ -206,20 +244,13 @@ export default function App() {
       ],
     });
   }, [showAlert, resetAppData]);
-
-  useEffect(() => {
-  const checkSession = async () => {
-    try {
-      const res = await axios.get("/api/auth/me");
-      const site = res.data.user.site;
-      setCurrentSite(site);
-      await loadSharedData(site, true);
-    } catch {
-      setCurrentSite(null);
-    }
-  };
-  checkSession();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const refreshOrders = useCallback(async () => {
+  try {
+    const res = await axios.get("/orders");
+    setOrders(res.data || {});
+  } catch (err) {
+    console.error("Failed to refresh orders:", err.message);
+  }
 }, []);
 
   useEffect(() => {
@@ -227,9 +258,18 @@ export default function App() {
   }, [currentSite, loadSharedData]);
 
   // Derived Values
-  const pendingTransit = useMemo(() => transitRecords.filter(r => r.toSite === "LHE" && r.status === "IN_TRANSIT").length, [transitRecords]);
-  const criticalCount = useMemo(() => buildForecast(allEntries, closing, orders).filter(r => r.status === "CRITICAL").length, [allEntries, closing, orders]);
-
+const pendingTransit = useMemo(
+  () => transitRecords.filter(r => r.toSite === currentSite && r.status === "IN_TRANSIT").length,
+  [transitRecords, currentSite]
+);  
+const siteForecast = useMemo(
+  () => buildForecast(allEntries, closing, orders, currentSite),
+  [allEntries, closing, orders, currentSite]
+);
+const criticalCount = useMemo(
+  () => siteForecast.filter(r => r.status === "CRITICAL").length,
+  [siteForecast]
+);
   // LHE Transit Notifications Effect
   useEffect(() => {
     if (!currentSite || currentSite !== "LHE") {
@@ -322,6 +362,7 @@ export default function App() {
   // Active Tab Mapping Component
   const renderActiveTab = () => {
     const tabProps = {
+      dashboard: {entries: allEntries,closing,currentSite,orders,transitRecords,},
       entry: { setOrders, orders, entries: allEntries, setEntries: setAllEntries, closing, setClosing, toast, showAlert, transitRecords, setTransitRecords, currentSite, irisRecords, setIrisRecords, irisFiles, setIrisFiles, dailyRows, setDailyRows, dailyFileName, setDailyFileName },
       balances: { closing, setClosing, toast, showAlert, entries: allEntries, currentSite },
       history: { allEntries, setAllEntries, toast, transitRecords, currentSite },
@@ -330,9 +371,14 @@ export default function App() {
       forecast: { entries: allEntries, closing, currentSite, orders, setOrders },
       consumables: { entries: allEntries, siteId: currentSite },
       certificate: { entries: allEntries, currentSite },
+      // Admin-only tab — Sidebar only renders the nav entry for it when
+      // isAdmin is true, but we still guard here in case tab state somehow
+      // gets set to "users" for a non-admin (e.g. stale localStorage tab).
+      users: { toast },
     };
 
     const TabComponents = {
+      dashboard:DashboardTab,
       entry: EntryTab,
       balances: BalancesTab,
       history: HistoryTab,
@@ -341,7 +387,10 @@ export default function App() {
       forecast: ForecastTab,
       consumables: ConsumablesTab,
       certificate: CertificateTab,
+      users: UserManagementTab,
     };
+
+    if (tab === "users" && !isAdmin) return null;
 
     const ActiveComponent = TabComponents[tab];
     return ActiveComponent ? <ActiveComponent {...tabProps[tab]} /> : null;
@@ -355,7 +404,9 @@ export default function App() {
         <Sidebar
           site={currentSite} tab={tab} setTab={setTab}
           pendingTransit={pendingTransit} criticalCount={criticalCount}
+          forecast={siteForecast} orders={orders}
           irisFiles={irisFiles} dailyRows={dailyRows}
+  isAdmin={isAdmin}
           onSwitchSite={() => showAlert({
             type: "info", title: "Switch Site?",
             msg: "You'll be returned to the login screen. All data is shared.",
@@ -370,7 +421,7 @@ export default function App() {
         <div style={styles.mainWrapper}>
           <header style={styles.header}>
             <div style={styles.headerFlex}>
-              <span style={{ fontSize: 14, color: C.textFaint }}>UBL CardStock</span>
+              <span style={{ fontSize: 14, color: C.textFaint }}>UBL PLASTIC INVENTORY MANAGEMENT SYSTEM</span>
               <span style={{ color: C.border }}>›</span>
               <span style={{ fontSize: 14, fontWeight: 600, color: C.textMid }}>
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -396,20 +447,57 @@ export default function App() {
         <Toast toasts={toasts} />
       </div>
 
+      {/* Admin-only floating order-approval bell. Polls in the background
+          and shows a panel of pending order requests from regular users. */}
+     {isAdmin && <OrderApprovalsPanel toast={toast} onOrdersChanged={refreshOrders} />}
+
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500;600;700&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; }
-        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-        input[type=number] { -moz-appearance: textfield; }
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateX(20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: ${C.borderStrong}; border-radius: 3px; }
-      `}</style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500;600;700&display=swap');
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: ${C.borderStrong};
+    border-radius: 3px;
+  }
+`}</style>
+
     </>
   );
 }

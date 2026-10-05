@@ -63,13 +63,16 @@ module.exports = function (pool) {
 
         // ─────────────────────────────
         // FIND EXISTING ENTRY
+        // Bulk-save always operates on the date currently being entered,
+        // which is always current-month — so lookups only ever need to
+        // check entries_hot, never the archive.
         // ─────────────────────────────
 
         if (invType === "PLASTIC") {
           const [result] = await conn.query(
             `SELECT e.*
-             FROM entries e
-             INNER JOIN plastic_entries pe
+             FROM entries_hot e
+             INNER JOIN plastic_entries_hot pe
                ON pe.entry_id = e.id
              WHERE e.date = ?
                AND e.site = ?
@@ -96,8 +99,8 @@ module.exports = function (pool) {
         } else if (invType === "MAILER" || invType === "ENVELOPE") {
           const [result] = await conn.query(
             `SELECT e.*
-             FROM entries e
-             INNER JOIN mailer_entries me
+             FROM entries_hot e
+             INNER JOIN mailer_entries_hot me
                ON me.entry_id = e.id
              WHERE e.date = ?
                AND e.site = ?
@@ -126,7 +129,7 @@ module.exports = function (pool) {
         } else {
           const [result] = await conn.query(
             `SELECT *
-             FROM entries
+             FROM entries_hot
              WHERE date = ?
                AND site = ?
                AND inv_type = ?
@@ -195,7 +198,7 @@ module.exports = function (pool) {
           }
 
           await conn.query(
-            `UPDATE entries
+            `UPDATE entries_hot
              SET received_from_vendor = ?,
                  batch_count = ?,
                  extra_count = ?,
@@ -252,10 +255,10 @@ module.exports = function (pool) {
         }
 
         // IMPORTANT:
-        // subProduct/pageSize are NOT stored in entries.
-        // They are stored in plastic_entries/mailer_entries.
+        // subProduct/pageSize are NOT stored in entries_hot.
+        // They are stored in plastic_entries_hot/mailer_entries_hot.
         const [result] = await conn.query(
-          `INSERT INTO entries (
+          `INSERT INTO entries_hot (
             date,
             site,
             inv_type,
@@ -306,7 +309,7 @@ module.exports = function (pool) {
 
         if (invType === "PLASTIC" && row.subProduct) {
           await conn.query(
-            `INSERT INTO plastic_entries
+            `INSERT INTO plastic_entries_hot
               (entry_id, sub_product)
              VALUES (?, ?)
              ON DUPLICATE KEY UPDATE
@@ -324,7 +327,7 @@ module.exports = function (pool) {
           row.pageSize
         ) {
           await conn.query(
-            `INSERT INTO mailer_entries
+            `INSERT INTO mailer_entries_hot
               (entry_id, page_size, scheme, plastic_category, sub_product)
              VALUES (?, ?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE
@@ -366,6 +369,7 @@ module.exports = function (pool) {
 
       // ─────────────────────────────
       // CLOSING BALANCES
+      // (unaffected by the hot/archive split — not part of it)
       // ─────────────────────────────
 
       for (const [key, value] of closingWrites) {
@@ -392,7 +396,7 @@ module.exports = function (pool) {
         const toSite = site === "KHI" ? "LHE" : "KHI";
 
         const [result] = await conn.query(
-          `INSERT INTO transit_records
+          `INSERT INTO transit_records_hot
             (entry_id, from_site, to_site, date, quantity, note, status, created_at)
            VALUES (?, ?, ?, ?, ?, ?, 'IN_TRANSIT', NOW())`,
           [
@@ -450,4 +454,3 @@ module.exports = function (pool) {
 
   return router;
 };
-

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef, memo } from "react";
 import { C } from "../../constants/color";
 import { CAT, INVENTORY_TYPES, VENDORS } from "../../constants/catalog";
 import { today, fmt, fmtDate, ckCatSite } from "../../utils/helper";
-import { parseIrisExcel, parseDailyStockExcel } from "../../utils/irisEngine";
+import { parseIrisExcel, parseDailyStockExcel,validateDailyStockHeaders } from "../../utils/irisEngine";
 import useLS from "../../hooks/useLS";
 import { Card, CardHeader } from "../ui/Card";
 import { Pill, SegPill } from "../ui/Pill";
@@ -361,11 +361,10 @@ export default function EntryTab({
   setDailyFileName,
 }) {
   const [date, setDate] = useState(today());
-  const [invType, setInvType] = useLS("ei_invType", "PLASTIC");
-
-  const [ct, setCt] = useLS("ei_ct", "");
-  const [sc, setSc] = useLS("ei_sc", "");
-  const [cat, setCat] = useLS("ei_cat", "");
+  const [invType, setInvType] = useState("PLASTIC");
+  const [ct, setCt] = useState("");
+  const [sc, setSc] = useState("");
+  const [cat, setCat] = useState("");
 
   const [sub, setSub] = useState("");
   const [seg, setSeg] = useState("");
@@ -706,61 +705,106 @@ export default function EntryTab({
     }
   };
 
-  const handleDailyUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+ const handleDailyUpload = async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    setDailyLoading(true);
+  setDailyLoading(true);
 
-    // Yield control to UI main thread for slow VMs
-    await new Promise((r) => setTimeout(r, 10));
+  // Yield control to UI main thread for slow VMs
+  await new Promise((r) => setTimeout(r, 10));
 
-    try {
-      const rows = await parseDailyStockExcel(file);
+  try {
+    // =====================================================
+    // FIRST: VALIDATE REQUIRED EXCEL COLUMNS
+    // =====================================================
+    const validation = await validateDailyStockHeaders(file);
 
-      if (!rows.length) {
-        showAlert({
-          type: "warn",
-          title: "No Rows Found",
-          msg: `No data in <strong>${file.name}</strong>.`,
-        });
-        return;
-      }
-
-      setDailyRows((prev) => {
-        const map = new Map(prev.map((r) => [r.irisDesc.toUpperCase(), r]));
-        rows.forEach((r) => map.set(r.irisDesc.toUpperCase(), r));
-        return Array.from(map.values());
-      });
-
-      setDailyFileName((prev) => {
-        const names = prev ? prev.split(", ").filter(Boolean) : [];
-        if (!names.includes(file.name)) names.push(file.name);
-        return names.join(", ");
-      });
-
-      setSelDailyRow(null);
-
-      const matchedCount = rows.filter((r) => r.matched).length;
-
-      showAlert({
-        type: "success",
-        title: "Daily Stock Loaded",
-        msg: `<strong>${file.name}</strong><br/><strong>${rows.length} rows</strong> · <strong>${matchedCount} matched</strong>`,
-      });
-
-      toast(`${rows.length} rows loaded.`, "success");
-    } catch (err) {
+    if (!validation.valid) {
       showAlert({
         type: "error",
-        title: "Import Failed",
-        msg: err.message,
+        title: "Invalid Daily Stock File",
+        msg: `
+          <div style="margin-bottom:8px;">
+            The uploaded file is missing the following required columns:
+          </div>
+
+          <div style="
+            background:#FEF2F2;
+            border:1px solid #FECACA;
+            border-radius:8px;
+            padding:10px;
+            color:#B91C1C;
+            font-size:12px;
+            line-height:1.7;
+          ">
+            ${validation.missing
+              .map((column) => `<div>• <strong>${column}</strong></div>`)
+              .join("")}
+          </div>
+
+          <div style="
+            margin-top:10px;
+            color:#64748B;
+            font-size:11px;
+          ">
+            Please upload a Daily Stock file containing all required columns.
+          </div>
+        `,
       });
-    } finally {
-      setDailyLoading(false);
-      e.target.value = "";
+
+      return;
     }
-  };
+
+    // =====================================================
+    // HEADER VALIDATION PASSED — NOW PARSE THE FILE
+    // =====================================================
+    const rows = await parseDailyStockExcel(file);
+
+    if (!rows.length) {
+      showAlert({
+        type: "warn",
+        title: "No Rows Found",
+        msg: `No data in <strong>${file.name}</strong>.`,
+      });
+      return;
+    }
+
+    setDailyRows((prev) => {
+      const map = new Map(prev.map((r) => [r.irisDesc.toUpperCase(), r]));
+      rows.forEach((r) => map.set(r.irisDesc.toUpperCase(), r));
+      return Array.from(map.values());
+    });
+
+    setDailyFileName((prev) => {
+      const names = prev ? prev.split(", ").filter(Boolean) : [];
+      if (!names.includes(file.name)) names.push(file.name);
+      return names.join(", ");
+    });
+
+    setSelDailyRow(null);
+
+    const matchedCount = rows.filter((r) => r.matched).length;
+
+    showAlert({
+      type: "success",
+      title: "Daily Stock Loaded",
+      msg: `<strong>${file.name}</strong><br/><strong>${rows.length} rows</strong> · <strong>${matchedCount} matched</strong>`,
+    });
+
+    toast(`${rows.length} rows loaded.`, "success");
+  } catch (err) {
+    showAlert({
+      type: "error",
+      title: "Import Failed",
+      msg: err.message,
+    });
+  } finally {
+    setDailyLoading(false);
+    e.target.value = "";
+  }
+};
+
 
   /* =========================================================
      SAVE ACTIONS

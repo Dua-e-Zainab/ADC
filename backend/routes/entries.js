@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
-// SAVE ENTRY
+// SAVE ENTRY — always writes to *_hot. New entries are always current-month,
+// so they always belong in hot; archiving only ever moves things out later.
 router.post("/", async (req, res) => {
   const conn = await db.getConnection();
   try {
@@ -12,7 +13,7 @@ router.post("/", async (req, res) => {
     console.log("inv_type:", e.invType);
     console.log("pageSize:", e.pageSize);
     console.log("subProduct:", e.subProduct);
- 
+
 
     const savedAt = e.savedAt
       ? new Date(e.savedAt).toISOString().slice(0, 19).replace("T", " ")
@@ -20,7 +21,7 @@ router.post("/", async (req, res) => {
 
     // Insert base entry
     const [result] = await conn.query(
-  `INSERT INTO entries
+  `INSERT INTO entries_hot
     (date, site, inv_type, card_type, scheme, plastic_category, segment,
      batch_number, opening_balance, received_from_vendor,
      batch_count, extra_count, damaged, moved_to_other_site,
@@ -47,7 +48,7 @@ router.post("/", async (req, res) => {
   if (e.invType === "PLASTIC") {
   if (!e.subProduct) throw new Error("subProduct is required for PLASTIC entries");
   await conn.query(
-    `INSERT INTO plastic_entries (entry_id, sub_product)
+    `INSERT INTO plastic_entries_hot (entry_id, sub_product)
      VALUES (?, ?)
      ON DUPLICATE KEY UPDATE sub_product = VALUES(sub_product)`,
     [entryId, e.subProduct]
@@ -55,7 +56,7 @@ router.post("/", async (req, res) => {
 } else if (e.invType === "MAILER" || e.invType === "ENVELOPE") {
   if (!e.pageSize) throw new Error("pageSize is required for MAILER/ENVELOPE entries");
   await conn.query(
-    `INSERT INTO mailer_entries (entry_id, page_size, scheme, plastic_category, sub_product)
+    `INSERT INTO mailer_entries_hot (entry_id, page_size, scheme, plastic_category, sub_product)
      VALUES (?, ?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE page_size = VALUES(page_size), scheme = VALUES(scheme), plastic_category = VALUES(plastic_category), sub_product = VALUES(sub_product)`,
     [entryId, e.pageSize, e.scheme || null, e.plasticCategory || null, e.subProduct || null]
@@ -73,7 +74,7 @@ router.post("/", async (req, res) => {
           `SELECT id FROM vendors WHERE name = ?`, [v.name]
         );
         await conn.query(
-          `INSERT INTO entry_vendors (entry_id, vendor_id, quantity) VALUES (?, ?, ?)`,
+          `INSERT INTO entry_vendors_hot (entry_id, vendor_id, quantity) VALUES (?, ?, ?)`,
           [entryId, vendor.id, Number(v.qty)]
         );
       }
@@ -90,7 +91,13 @@ router.post("/", async (req, res) => {
     conn.release();
   }
 });
+
 // UPDATE ENTRY (merge bulk-save duplicates)
+// In practice this only ever targets entries created/edited within the
+// current month (bulk-save reconciliation happens close to entry time), so
+// it's expected to hit entries_hot. If a caller somehow tries to edit an
+// already-archived entry, we fall back to entries_archive rather than
+// silently failing.
 router.put("/:id", async (req, res) => {
   const conn = await db.getConnection();
   try {
@@ -99,25 +106,30 @@ router.put("/:id", async (req, res) => {
     const e = req.body;
     console.log("Received date:", e.date);
 
-    const [result] = await conn.query(
-      `UPDATE entries SET
+    const updateSql = `UPDATE %TABLE% SET
          received_from_vendor = ?,
          batch_count = ?,
          extra_count = ?,
          damaged = ?,
          moved_to_other_site = ?,
          closing_balance = ?
-       WHERE id = ?`,
-      [
-        e.receivedFromVendor || 0,
-        e.batchCount || 0,
-        e.extraCount || 0,
-        e.damaged || 0,
-        e.movedToOtherSite || 0,
-        e.closingBalance || 0,
-        id,
-      ]
-    );
+       WHERE id = ?`;
+    const params = [
+      e.receivedFromVendor || 0,
+      e.batchCount || 0,
+      e.extraCount || 0,
+      e.damaged || 0,
+      e.movedToOtherSite || 0,
+      e.closingBalance || 0,
+      id,
+    ];
+
+    let [result] = await conn.query(updateSql.replace("%TABLE%", "entries_hot"), params);
+
+    if (result.affectedRows === 0) {
+      // Not in hot — maybe already archived. Try archive before giving up.
+      [result] = await conn.query(updateSql.replace("%TABLE%", "entries_archive"), params);
+    }
 
     if (result.affectedRows === 0) {
       throw new Error(`No entry found with id ${id}`);
@@ -136,8 +148,9 @@ router.put("/:id", async (req, res) => {
 });
 
 // GET ALL ENTRIES
-// NEW — DATE_FORMAT forces e.date to come back as a plain "YYYY-MM-DD" string,
-// bypassing the JS Date object → toISOString() → UTC shift entirely
+// Reads through entries_all / plastic_entries_all / mailer_entries_all so
+// this endpoint transparently covers both hot and archived history — the
+// frontend (HistoryTab, ForecastTab analytics) doesn't need to change at all.
 router.get("/", async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -148,9 +161,9 @@ router.get("/", async (req, res) => {
         me.page_size,
         me.scheme        AS mailer_scheme,
         me.plastic_category AS mailer_plastic_category
-      FROM entries e
-      LEFT JOIN plastic_entries pe ON pe.entry_id = e.id
-      LEFT JOIN mailer_entries  me ON me.entry_id = e.id
+      FROM entries_all e
+      LEFT JOIN plastic_entries_all pe ON pe.entry_id = e.id
+      LEFT JOIN mailer_entries_all  me ON me.entry_id = e.id
       ORDER BY e.id DESC
     `);
     res.json(rows);
@@ -158,11 +171,17 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 // DELETE SINGLE ENTRY
+// Try hot first (the common case — most deletes target recent mistakes),
+// fall back to archive if the row's already aged out of hot.
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    await db.query("DELETE FROM entries WHERE id = ?", [id]);
+    const [hotResult] = await db.query("DELETE FROM entries_hot WHERE id = ?", [id]);
+    if (hotResult.affectedRows === 0) {
+      await db.query("DELETE FROM entries_archive WHERE id = ?", [id]);
+    }
     res.json({ success: true });
   } catch (err) {
     console.error("DELETE /entries/:id error:", err.message);
@@ -170,18 +189,27 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// DELETE ALL ENTRIES
 // DELETE ALL ENTRIES FOR A SITE
+// "Clear ledger history" is a full wipe, so it needs to hit both hot and
+// archive — a site's history could span either or both.
 router.delete("/", async (req, res) => {
   try {
     const site = req.session.user.site; // derived from session, never the client
 
-    const [result] = await db.query(
-      "DELETE FROM entries WHERE site = ?",
+    const [hotResult] = await db.query(
+      "DELETE FROM entries_hot WHERE site = ?",
+      [site]
+    );
+    const [archiveResult] = await db.query(
+      "DELETE FROM entries_archive WHERE site = ?",
       [site]
     );
 
-    res.json({ success: true, deleted: result.affectedRows, site });
+    res.json({
+      success: true,
+      deleted: hotResult.affectedRows + archiveResult.affectedRows,
+      site,
+    });
   } catch (err) {
     console.error("DELETE /entries error:", err.message);
     res.status(500).json({ error: err.message });

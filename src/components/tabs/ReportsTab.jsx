@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { C } from "../../constants/color";
-import { fmt, fmtDate,ckCatSite } from "../../utils/helper";
+import { fmt, fmtDate, ckCatSite } from "../../utils/helper";
 import { Card, CardHeader } from "../ui/Card";
 import { InvTypePill } from "../ui/Pill";
 import SharedSyncBanner from "../layout/SharedSyncBanner";
@@ -26,11 +26,11 @@ function SubProductIssuanceTable({ entries, totals }) {
 
   return (
     <div style={{ overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
         <thead>
           <tr style={{ background: C.navy }}>
-            {["Type", "Category", "Sub Product", "Scheme", "Batch Count", "Extra Count", "Total"].map((h, i) => (
-              <th key={i} style={{ padding: "9px 12px", color: "rgba(255,255,255,.7)", fontSize: 9, fontWeight: 700, textTransform: "uppercase", textAlign: i > 3 ? "right" : "left" }}>{h}</th>
+            {["Type", "Category", "Sub Product", "Scheme", "PRODUCED", "Extra Count", "Total"].map((h, i) => (
+              <th key={i} style={{ padding: "12px 14px", color: "rgba(255,255,255,.85)", fontSize: 11, fontWeight: 700, textTransform: "uppercase", textAlign: i > 3 ? "right" : "left" }}>{h}</th>
             ))}
           </tr>
         </thead>
@@ -38,36 +38,36 @@ function SubProductIssuanceTable({ entries, totals }) {
           {Object.entries(catMap).map(([cat, rows]) => (
             <React.Fragment key={cat}>
               <tr style={{ background: "#334155" }}>
-                <td colSpan={7} style={{ padding: "6px 12px", fontSize: 10, fontWeight: 700, color: "#fff" }}>
+                <td colSpan={7} style={{ padding: "8px 14px", fontSize: 12, fontWeight: 700, color: "#fff" }}>
                   📁 {cat} — {fmt(rows.reduce((s, r) => s + r.total, 0))} total
                 </td>
               </tr>
               {rows.map((row, idx) => (
                 <tr key={idx} style={{ borderBottom: `1px solid ${C.border}`, background: idx % 2 === 0 ? "#fff" : C.surface }}>
-                  <td style={{ padding: "8px 12px" }}><InvTypePill type={row.invType} /></td>
-                  <td style={{ padding: "8px 12px", fontSize: 11, color: C.textMid }}>{row.plasticCategory}</td>
-                  <td style={{ padding: "8px 12px", fontWeight: 600, color: C.text }}>{row.subProduct || "—"}</td>
-                  <td style={{ padding: "8px 12px", fontSize: 10, color: C.textMuted }}>{row.scheme}</td>
-                  <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.batchCount > 0 ? C.blue : C.border }}>{row.batchCount > 0 ? fmt(row.batchCount) : "—"}</td>
-                  <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.extraCount > 0 ? C.purple : C.border }}>{row.extraCount > 0 ? fmt(row.extraCount) : "—"}</td>
-                  <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.text, background: C.greenLight }}>{fmt(row.total)}</td>
+                  <td style={{ padding: "10px 14px" }}><InvTypePill type={row.invType} /></td>
+                  <td style={{ padding: "10px 14px", fontSize: 13, color: C.textMid }}>{row.plasticCategory}</td>
+                  <td style={{ padding: "10px 14px", fontWeight: 600, color: C.text }}>{row.subProduct || "—"}</td>
+                  <td style={{ padding: "10px 14px", fontSize: 12, color: C.textMuted }}>{row.scheme}</td>
+                  <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.batchCount > 0 ? C.blue : C.border }}>{row.batchCount > 0 ? fmt(row.batchCount) : "—"}</td>
+                  <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.extraCount > 0 ? C.purple : C.border }}>{row.extraCount > 0 ? fmt(row.extraCount) : "—"}</td>
+                  <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.text, background: C.greenLight }}>{fmt(row.total)}</td>
                 </tr>
               ))}
               <tr style={{ background: C.surface, borderTop: `1px solid ${C.borderStrong}` }}>
-                <td colSpan={4} style={{ padding: "7px 12px", fontSize: 10, fontWeight: 700, color: C.text }}>↳ {cat} subtotal</td>
-                <td style={{ padding: "7px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 11, color: C.blue }}>{fmt(rows.reduce((s, r) => s + r.batchCount, 0))}</td>
-                <td style={{ padding: "7px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 11, color: C.purple }}>{fmt(rows.reduce((s, r) => s + r.extraCount, 0))}</td>
-                <td style={{ padding: "7px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 12, color: C.green, background: C.greenLight }}>{fmt(rows.reduce((s, r) => s + r.total, 0))}</td>
+                <td colSpan={4} style={{ padding: "9px 14px", fontSize: 12, fontWeight: 700, color: C.text }}>↳ {cat} subtotal</td>
+                <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 13, color: C.blue }}>{fmt(rows.reduce((s, r) => s + r.batchCount, 0))}</td>
+                <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 13, color: C.purple }}>{fmt(rows.reduce((s, r) => s + r.extraCount, 0))}</td>
+                <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 14, color: C.green, background: C.greenLight }}>{fmt(rows.reduce((s, r) => s + r.total, 0))}</td>
               </tr>
             </React.Fragment>
           ))}
         </tbody>
         <tfoot>
           <tr style={{ background: C.navy }}>
-            <td colSpan={4} style={{ padding: "10px 12px", fontSize: 11, fontWeight: 700, color: "#fff" }}>GRAND TOTAL</td>
-            <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 12, color: "#60A5FA" }}>{fmt(totals.batchCount)}</td>
-            <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 12, color: "#A78BFA" }}>{fmt(totals.extraCount)}</td>
-            <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 13, color: "#34D399" }}>{fmt(totals.total)}</td>
+            <td colSpan={4} style={{ padding: "12px 14px", fontSize: 13, fontWeight: 700, color: "#fff" }}>GRAND TOTAL</td>
+            <td style={{ padding: "12px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 14, color: "#60A5FA" }}>{fmt(totals.batchCount)}</td>
+            <td style={{ padding: "12px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 14, color: "#A78BFA" }}>{fmt(totals.extraCount)}</td>
+            <td style={{ padding: "12px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 15, color: "#34D399" }}>{fmt(totals.total)}</td>
           </tr>
         </tfoot>
       </table>
@@ -76,24 +76,26 @@ function SubProductIssuanceTable({ entries, totals }) {
 }
 
 const FormField = ({ label, children, width }) => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: width }}>
-    <label style={{ fontSize: 10, fontWeight: 600, color: C.textFaint, textTransform: "uppercase" }}>{label}</label>
+  <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: width }}>
+    <label style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: "uppercase" }}>{label}</label>
     {children}
   </div>
 );
+
 const StatBox = ({ label, value, color }) => (
-  <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 16px" }}>
-    <div style={{ fontSize: 9, fontWeight: 700, color: C.textFaint, textTransform: "uppercase" }}>{label}</div>
-    <div style={{ fontSize: 20, fontWeight: 800, color, fontFamily: "monospace", marginTop: 3 }}>{fmt(value)}</div>
+  <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: "14px 18px" }}>
+    <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: "uppercase" }}>{label}</div>
+    <div style={{ fontSize: 22, fontWeight: 800, color, fontFamily: "monospace", marginTop: 4 }}>{fmt(value)}</div>
   </div>
 );
+
 const BaseTable = ({ headers, rightAlignIndex, children }) => (
   <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${C.border}` }}>
-    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
       <thead>
         <tr style={{ background: C.navy }}>
           {headers.map((h, i) => (
-            <th key={i} style={{ padding: "9px 12px", color: "rgba(255,255,255,.7)", fontSize: 9, fontWeight: 700, textTransform: "uppercase", textAlign: i > rightAlignIndex ? "right" : "left" }}>{h}</th>
+            <th key={i} style={{ padding: "12px 14px", color: "rgba(255,255,255,.85)", fontSize: 11, fontWeight: 700, textTransform: "uppercase", textAlign: i > rightAlignIndex ? "right" : "left" }}>{h}</th>
           ))}
         </tr>
       </thead>
@@ -102,7 +104,7 @@ const BaseTable = ({ headers, rightAlignIndex, children }) => (
   </div>
 );
 
-export default function ReportsTab({ entries, dailyRows, currentSite,closing }) {
+export default function ReportsTab({ entries, dailyRows, currentSite, closing }) {
   const [fCT, setFCT] = useState("");
   const [fSeg, setFSeg] = useState("");
   const [fInv, setFInv] = useState("");
@@ -138,12 +140,14 @@ export default function ReportsTab({ entries, dailyRows, currentSite,closing }) 
   const [rangeTo, setRangeTo] = useState("");
   const [rangeCat, setRangeCat] = useState("");
 
-const reportEntries = useMemo(() => {
+  const reportEntries = useMemo(() => {
     return entries.filter(e => 
       e.invType === reportInvType && 
       (!currentSite || currentSite === "ALL" || e.site === currentSite)
     );
-  }, [entries, reportInvType, currentSite]);  const monthlyPlasticCats = useMemo(() => [...new Set(reportEntries.map(e => e.plasticCategory).filter(Boolean))].sort(), [reportEntries]);
+  }, [entries, reportInvType, currentSite]);
+
+  const monthlyPlasticCats = useMemo(() => [...new Set(reportEntries.map(e => e.plasticCategory).filter(Boolean))].sort(), [reportEntries]);
   const monthlyBatches = useMemo(() => [...new Set(reportEntries.map(e => e.ntbBatch).filter(Boolean))].sort(), [reportEntries]);
   const monthlySegments = useMemo(() => [...new Set(reportEntries.map(e => e.segment).filter(Boolean))].sort(), [reportEntries]);
   const subs = useMemo(() => [...new Set(
@@ -165,54 +169,50 @@ const reportEntries = useMemo(() => {
   const totalMov = fil.reduce((s, e) => s + (e.movedToOtherSite || 0), 0);
 
   /* ── Monthly ── */
-  /* ── Monthly ── */
-const monthlyData = useMemo(() => {
-  if (!reportMonth) return [];
-  const [year, month] = reportMonth.split("-"), byKey = {};
+  const monthlyData = useMemo(() => {
+    if (!reportMonth) return [];
+    const [year, month] = reportMonth.split("-"), byKey = {};
 
-  reportEntries
-    .filter(e => {
-      const [y, m] = (e.date || "").split("-");
-      return y === year && m === month &&
-        (!reportSub || e.subProduct === reportSub) &&
-        (!reportPlasticCat || e.plasticCategory === reportPlasticCat) &&
-        (!reportBatch || e.batchNumber === reportBatch) &&
-        (!reportSegment || e.segment === reportSegment);
-    })
-    .forEach(e => {
-      const k = `${e.date}|||${e.plasticCategory || ""}|||${e.subProduct || ""}`;
-      
-      if (!byKey[k]) {
-        // Pehli entry milne par Object initialize karein (Pehla opening balance yahan set hoga)
-        byKey[k] = { 
-          date: e.date, 
-          plasticCategory: e.plasticCategory || "—", 
-          subProduct: e.subProduct || "—", 
-          opening: e.openingBalance || 0, // Sirf Pehli entry ka Opening
-          received: 0, 
-          consumed: 0, 
-          damaged: 0, 
-          moved: 0, 
-          closing: e.closingBalance || 0  // Initial Closing
-        };
-      }
+    reportEntries
+      .filter(e => {
+        const [y, m] = (e.date || "").split("-");
+        return y === year && m === month &&
+          (!reportSub || e.subProduct === reportSub) &&
+          (!reportPlasticCat || e.plasticCategory === reportPlasticCat) &&
+          (!reportBatch || e.batchNumber === reportBatch) &&
+          (!reportSegment || e.segment === reportSegment);
+      })
+      .forEach(e => {
+        const k = `${e.date}|||${e.plasticCategory || ""}|||${e.subProduct || ""}`;
+        
+        if (!byKey[k]) {
+          byKey[k] = { 
+            date: e.date, 
+            plasticCategory: e.plasticCategory || "—", 
+            subProduct: e.subProduct || "—", 
+            opening: e.openingBalance || 0,
+            received: 0, 
+            consumed: 0, 
+            damaged: 0, 
+            moved: 0, 
+            closing: e.closingBalance || 0 
+          };
+        }
 
-      // Movement totals hamesha sum hongay
-      byKey[k].received += e.receivedFromVendor || 0;
-      byKey[k].consumed += e.totalConsumption || 0;
-      byKey[k].damaged += e.damaged || 0;
-      byKey[k].moved += e.movedToOtherSite || 0;
+        byKey[k].received += e.receivedFromVendor || 0;
+        byKey[k].consumed += e.totalConsumption || 0;
+        byKey[k].damaged += e.damaged || 0;
+        byKey[k].moved += e.movedToOtherSite || 0;
+        byKey[k].closing = e.closingBalance || 0; 
+      });
 
-      // Closing balance hamesha Aakhri (latest) entry ka overwrite hoga
-      byKey[k].closing = e.closingBalance || 0; 
-    });
+    return Object.values(byKey).sort((a, b) => 
+      a.date.localeCompare(b.date) || 
+      a.plasticCategory.localeCompare(b.plasticCategory) || 
+      a.subProduct.localeCompare(b.subProduct)
+    );
+  }, [reportEntries, reportMonth, reportSub, reportPlasticCat, reportBatch, reportSegment]);
 
-  return Object.values(byKey).sort((a, b) => 
-    a.date.localeCompare(b.date) || 
-    a.plasticCategory.localeCompare(b.plasticCategory) || 
-    a.subProduct.localeCompare(b.subProduct)
-  );
-}, [reportEntries, reportMonth, reportSub, reportPlasticCat, reportBatch, reportSegment]);
   const downloadMonthlyCSV = useCallback(() => {
     downloadStyledExcel({
       title: "Monthly Report",
@@ -233,202 +233,172 @@ const monthlyData = useMemo(() => {
     });
   }, [monthlyData, reportMonth]);
 
-/* ── Range ── */
-/* ── Range Data Fix ── */
-const rangeData = useMemo(() => {
-  const from = rangeFrom || null;
-  const to = rangeTo || null;
+  /* ── Range ── */
+  const rangeData = useMemo(() => {
+    const from = rangeFrom || null;
+    const to = rangeTo || null;
 
-  // 1. Filter entries by category first
-  const filteredEntries = reportEntries.filter((e) => {
-    if (rangeCat && e.plasticCategory !== rangeCat) return false;
-    return true;
-  });
-
-  // 2. Group fine-grained lines and collect their matching entries in one pass O(N)
-  const fineMap = {};
-
-  filteredEntries.forEach((e) => {
-    const fk =
-      `${e.invType || "PLASTIC"}|||` +
-      `${e.cardType || ""}|||` +
-      `${e.scheme || ""}|||` +
-      `${e.plasticCategory || ""}|||` +
-      `${e.subProduct || ""}|||` +
-      `${e.segment || ""}`;
-
-    if (!fineMap[fk]) {
-      fineMap[fk] = {
-        plasticCategory: e.plasticCategory,
-        cardType: e.cardType,
-        scheme: e.scheme,
-        invType: e.invType || "PLASTIC",
-        entries: [], // Store raw matching entries directly
-      };
-    }
-
-    fineMap[fk].entries.push(e);
-  });
-
-  // 3. Process calculations for each fine line
-  const calculatedFineLines = Object.values(fineMap).map((group) => {
-    // Sort entries chronologically safely
-    const sorted = [...group.entries].sort(
-      (a, b) => new Date(a.date || 0) - new Date(b.date || 0)
-    );
-
-    /*
-     * ----------------------------------------------------
-     * 1. FIND OPENING BEFORE THE REPORT RANGE
-     * ----------------------------------------------------
-     */
-    let opening = 0;
-    const beforeRange = sorted.filter(
-      (e) => !from || (e.date || "") < from
-    );
-
-    if (beforeRange.length > 0) {
-      // Last record prior to 'from' date becomes baseline opening
-      const lastBeforeRange = beforeRange[beforeRange.length - 1];
-      opening = Number(lastBeforeRange.closingBalance) || 0;
-    } else if (sorted.length > 0) {
-      // First ledger entry's opening balance as fallback
-      opening = Number(sorted[0].openingBalance) || 0;
-    }
-
-    /*
-     * ----------------------------------------------------
-     * 2. CALCULATE MOVEMENTS INSIDE RANGE
-     * ----------------------------------------------------
-     */
-    const inRange = sorted.filter((e) => {
-      if (from && e.date < from) return false;
-      if (to && e.date > to) return false;
+    const filteredEntries = reportEntries.filter((e) => {
+      if (rangeCat && e.plasticCategory !== rangeCat) return false;
       return true;
     });
 
-    let received = 0;
-    let consumed = 0;
-    let damaged = 0;
-    let moved = 0;
+    const fineMap = {};
 
-    inRange.forEach((e) => {
-      received += Number(e.receivedFromVendor) || 0;
-      consumed += Number(e.totalConsumption) || 0;
-      damaged += Number(e.damaged) || 0;
-      moved += Number(e.movedToOtherSite) || 0;
+    filteredEntries.forEach((e) => {
+      const fk =
+        `${e.invType || "PLASTIC"}|||` +
+        `${e.cardType || ""}|||` +
+        `${e.scheme || ""}|||` +
+        `${e.plasticCategory || ""}|||` +
+        `${e.subProduct || ""}|||` +
+        `${e.segment || ""}`;
+
+      if (!fineMap[fk]) {
+        fineMap[fk] = {
+          plasticCategory: e.plasticCategory,
+          cardType: e.cardType,
+          scheme: e.scheme,
+          invType: e.invType || "PLASTIC",
+          entries: [],
+        };
+      }
+
+      fineMap[fk].entries.push(e);
     });
 
-    /*
-     * ----------------------------------------------------
-     * 3. CALCULATE CLOSING
-     * ----------------------------------------------------
-     */
-    const closing = opening + received - consumed - damaged - moved;
+    const calculatedFineLines = Object.values(fineMap).map((group) => {
+      const sorted = [...group.entries].sort(
+        (a, b) => new Date(a.date || 0) - new Date(b.date || 0)
+      );
 
-    return {
-      plasticCategory: group.plasticCategory,
-      cardType: group.cardType,
-      opening,
-      received,
-      consumed,
-      damaged,
-      moved,
-      closing,
-    };
-  });
+      let opening = 0;
+      const beforeRange = sorted.filter(
+        (e) => !from || (e.date || "") < from
+      );
 
-  /*
-   * ----------------------------------------------------
-   * 4. ROLL UP FINE LINES TO CATEGORY LEVEL
-   * ----------------------------------------------------
-   */
-  const catMap = {};
+      if (beforeRange.length > 0) {
+        const lastBeforeRange = beforeRange[beforeRange.length - 1];
+        opening = Number(lastBeforeRange.closingBalance) || 0;
+      } else if (sorted.length > 0) {
+        opening = Number(sorted[0].openingBalance) || 0;
+      }
 
-  calculatedFineLines.forEach((line) => {
-    const key = `${line.plasticCategory || ""}|||${line.cardType || ""}`;
+      const inRange = sorted.filter((e) => {
+        if (from && e.date < from) return false;
+        if (to && e.date > to) return false;
+        return true;
+      });
 
-    if (!catMap[key]) {
-      catMap[key] = {
-        plasticCategory: line.plasticCategory,
-        cardType: line.cardType,
+      let received = 0;
+      let consumed = 0;
+      let damaged = 0;
+      let moved = 0;
+
+      inRange.forEach((e) => {
+        received += Number(e.receivedFromVendor) || 0;
+        consumed += Number(e.totalConsumption) || 0;
+        damaged += Number(e.damaged) || 0;
+        moved += Number(e.movedToOtherSite) || 0;
+      });
+
+      const closing = opening + received - consumed - damaged - moved;
+
+      return {
+        plasticCategory: group.plasticCategory,
+        cardType: group.cardType,
+        opening,
+        received,
+        consumed,
+        damaged,
+        moved,
+        closing,
+      };
+    });
+
+    const catMap = {};
+
+    calculatedFineLines.forEach((line) => {
+      const key = `${line.plasticCategory || ""}|||${line.cardType || ""}`;
+
+      if (!catMap[key]) {
+        catMap[key] = {
+          plasticCategory: line.plasticCategory,
+          cardType: line.cardType,
+          opening: 0,
+          received: 0,
+          consumed: 0,
+          damaged: 0,
+          moved: 0,
+          closing: 0,
+        };
+      }
+
+      catMap[key].opening += line.opening;
+      catMap[key].received += line.received;
+      catMap[key].consumed += line.consumed;
+      catMap[key].damaged += line.damaged;
+      catMap[key].moved += line.moved;
+      catMap[key].closing += line.closing;
+    });
+
+    return Object.values(catMap).sort(
+      (a, b) =>
+        (a.cardType || "").localeCompare(b.cardType || "") ||
+        (a.plasticCategory || "").localeCompare(b.plasticCategory || "")
+    );
+  }, [reportEntries, rangeFrom, rangeTo, rangeCat]);
+
+  const rangeTotals = useMemo(() =>
+    rangeData.reduce(
+      (t, r) => ({
+        opening: t.opening + r.opening,
+        received: t.received + r.received,
+        consumed: t.consumed + r.consumed,
+        damaged: t.damaged + r.damaged,
+        closing: t.closing + r.closing,
+      }),
+      {
         opening: 0,
         received: 0,
         consumed: 0,
         damaged: 0,
-        moved: 0,
         closing: 0,
-      };
-    }
-
-    catMap[key].opening += line.opening;
-    catMap[key].received += line.received;
-    catMap[key].consumed += line.consumed;
-    catMap[key].damaged += line.damaged;
-    catMap[key].moved += line.moved;
-    catMap[key].closing += line.closing;
-  });
-
-  return Object.values(catMap).sort(
-    (a, b) =>
-      (a.cardType || "").localeCompare(b.cardType || "") ||
-      (a.plasticCategory || "").localeCompare(b.plasticCategory || "")
+      }
+    ),
+    [rangeData]
   );
-}, [reportEntries, rangeFrom, rangeTo, rangeCat]);
-
-
-
-  const rangeTotals = useMemo(() =>
-  rangeData.reduce(
-    (t, r) => ({
-      opening: t.opening + r.opening,
-      received: t.received + r.received,
-      consumed: t.consumed + r.consumed,
-      damaged: t.damaged + r.damaged,
-      closing: t.closing + r.closing,
-    }),
-    {
-      opening: 0,
-      received: 0,
-      consumed: 0,
-      damaged: 0,
-      closing: 0,
-    }
-  ),
-  [rangeData]
-);
 
   const downloadRangeCSV = useCallback(() => {
     downloadStyledExcel({
       title: `Range Report — DEBIT + CREDIT (${rangeFrom || "Start"} to ${rangeTo || "End"})`,
       headers: [
-  "Code",
-  "Product",
-  "Opening",
-  "Stock Received",
-  "Consumption",
-  "Damaged",
-  "Closing"
-],
+        "Code",
+        "Product",
+        "Opening",
+        "Stock Received",
+        "Consumption",
+        "Damaged",
+        "Closing"
+      ],
       rows: rangeData.map(r => [
-  r.cardType,
-  r.plasticCategory,
-  r.opening,
-  r.received,
-  r.consumed,
-  r.damaged,
-  r.closing
-]),
-
-footerRow: [
-  "",
-  "TOTAL",
-  rangeTotals.opening,
-  rangeTotals.received,
-  rangeTotals.consumed,
-  rangeTotals.damaged,
-  rangeTotals.closing
-],
+        r.cardType,
+        r.plasticCategory,
+        r.opening,
+        r.received,
+        r.consumed,
+        r.damaged,
+        r.closing
+      ]),
+      footerRow: [
+        "",
+        "TOTAL",
+        rangeTotals.opening,
+        rangeTotals.received,
+        rangeTotals.consumed,
+        rangeTotals.damaged,
+        rangeTotals.closing
+      ],
       filename: `Range_Report_${rangeFrom || "Start"}_to_${rangeTo || "End"}.xls`,
     });
   }, [rangeData, rangeTotals, rangeFrom, rangeTo]);
@@ -437,33 +407,32 @@ footerRow: [
     downloadStyledPDF({
       title: `Range Report — ${rangeFrom || "Start"} to ${rangeTo || "End"}`,
       headers: [
-  "Code",
-  "Product",
-  "Opening",
-  "Stock Received",
-  "Consumption",
-  "Damaged",
-  "Closing"
-],
+        "Code",
+        "Product",
+        "Opening",
+        "Stock Received",
+        "Consumption",
+        "Damaged",
+        "Closing"
+      ],
       rows: rangeData.map(r => [
-  r.cardType,
-  r.plasticCategory,
-  fmt(r.opening),
-  fmt(r.received),
-  fmt(r.consumed),
-  fmt(r.damaged),
-  fmt(r.closing)
-]),
-
-footerRow: [
-  "",
-  "TOTAL",
-  fmt(rangeTotals.opening),
-  fmt(rangeTotals.received),
-  fmt(rangeTotals.consumed),
-  fmt(rangeTotals.damaged),
-  fmt(rangeTotals.closing)
-],
+        r.cardType,
+        r.plasticCategory,
+        fmt(r.opening),
+        fmt(r.received),
+        fmt(r.consumed),
+        fmt(r.damaged),
+        fmt(r.closing)
+      ]),
+      footerRow: [
+        "",
+        "TOTAL",
+        fmt(rangeTotals.opening),
+        fmt(rangeTotals.received),
+        fmt(rangeTotals.consumed),
+        fmt(rangeTotals.damaged),
+        fmt(rangeTotals.closing)
+      ],
       filename: `Range_Report_${rangeFrom || "Start"}_${rangeTo || "End"}.pdf`,
       numericFromIndex: 2,
     });
@@ -473,24 +442,24 @@ footerRow: [
 
   const issuanceEntries = useMemo(() => {
     return reportEntries.filter((e) => {
-        if (e.cardType !== issuanceType) return false;
-        if (issuanceBatch && e.batchNumber !== issuanceBatch) return false;
-        if (issuanceCat && e.plasticCategory !== issuanceCat) return false;
-        if (issuanceSubProduct && e.subProduct !== issuanceSubProduct) return false;
+      if (e.cardType !== issuanceType) return false;
+      if (issuanceBatch && e.batchNumber !== issuanceBatch) return false;
+      if (issuanceCat && e.plasticCategory !== issuanceCat) return false;
+      if (issuanceSubProduct && e.subProduct !== issuanceSubProduct) return false;
 
-        const entryDate = (e.date || "").slice(0, 10);
+      const entryDate = (e.date || "").slice(0, 10);
 
-        if (issuancePeriod === "daily" && issuanceDate) {
-            return entryDate === issuanceDate;
-        }
+      if (issuancePeriod === "daily" && issuanceDate) {
+        return entryDate === issuanceDate;
+      }
 
-        if (issuancePeriod === "monthly" && issuanceMonth) {
-            return entryDate.startsWith(issuanceMonth);
-        }
+      if (issuancePeriod === "monthly" && issuanceMonth) {
+        return entryDate.startsWith(issuanceMonth);
+      }
 
-        return true;
+      return true;
     });
-}, [
+  }, [
     reportEntries,
     issuanceType,
     issuancePeriod,
@@ -499,131 +468,117 @@ footerRow: [
     issuanceBatch,
     issuanceCat,
     issuanceSubProduct,
-]);
-// console.log(reportEntries[0]);
+  ]);
 
-  // NEW — two-stage: fine-grained ledger key first, then roll up into category totals
-const issuanceGrouped = useMemo(() => {
-  const fineMap = {};
+  const issuanceGrouped = useMemo(() => {
+    const fineMap = {};
 
-  // IMPORTANT: chronological order
-  const sortedEntries = [...issuanceEntries].sort(
-    (a, b) => new Date(a.date) - new Date(b.date)
-  );
+    const sortedEntries = [...issuanceEntries].sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
 
-  sortedEntries.forEach(e => {
-    const fk = `${e.invType || "PLASTIC"}|||${e.cardType}|||${e.scheme}|||${e.plasticCategory}|||${e.subProduct}|||${e.segment}`;
+    sortedEntries.forEach(e => {
+      const fk = `${e.invType || "PLASTIC"}|||${e.cardType}|||${e.scheme}|||${e.plasticCategory}|||${e.subProduct}|||${e.segment}`;
 
-    const r = fineMap[fk] = fineMap[fk] || {
-      invType: e.invType || "PLASTIC",
-      cardType: e.cardType,
-      scheme: e.scheme,
-      plasticCategory: e.plasticCategory,
+      const r = fineMap[fk] = fineMap[fk] || {
+        invType: e.invType || "PLASTIC",
+        cardType: e.cardType,
+        scheme: e.scheme,
+        plasticCategory: e.plasticCategory,
+        opening: 0,
+        received: 0,
+        batchCount: 0,
+        damaged: 0,
+        moved: 0,
+        extraCount: 0,
+        closing: 0,
+        _firstDate: null,
+        _lastDate: null,
+      };
 
-      opening: 0,
-      received: 0,
-      batchCount: 0,
-      damaged: 0,
-      moved: 0,
-      extraCount: 0,
-      closing: 0,
+      if (r._firstDate === null) {
+        r._firstDate = e.date;
+        r.opening = Number(e.openingBalance) || 0;
+      }
 
-      _firstDate: null,
-      _lastDate: null,
-    };
+      r._lastDate = e.date;
 
-    // First historical opening
-    if (r._firstDate === null) {
-      r._firstDate = e.date;
-      r.opening = Number(e.openingBalance) || 0;
-    }
+      r.received += Number(e.receivedFromVendor) || 0;
+      r.batchCount += Number(e.totalConsumption) || 0;
+      r.damaged += Number(e.damaged) || 0;
+      r.moved += Number(e.movedToOtherSite) || 0;
+      r.extraCount += Number(e.extraCount) || 0;
+    });
 
-    r._lastDate = e.date;
+    Object.values(fineMap).forEach(line => {
+      line.closing =
+        line.opening +
+        line.received -
+        line.batchCount -
+        line.damaged -
+        line.moved;
+    });
 
-    r.received += Number(e.receivedFromVendor) || 0;
-    r.batchCount += Number(e.totalConsumption) || 0;
-    r.damaged += Number(e.damaged) || 0;
-    r.moved += Number(e.movedToOtherSite) || 0;
-    r.extraCount += Number(e.extraCount) || 0;
-  });
+    const catMap = {};
 
-  // Closing
-  // Closing — hamesha formula se, live ledger se kabhi nahi. Yeh report
-// period-specific hai, is liye har baar consistent calculate hona chahiye,
-// chahe usi din ki 1 entry ho ya 5.
-Object.values(fineMap).forEach(line => {
-  line.closing =
-    line.opening +
-    line.received -
-    line.batchCount -
-    line.damaged -
-    line.moved;
-  // extraCount ko closing se mat nikaalo — wo separate column hai jo
-  // "Total" mein already add hota hai; agar business logic mein extraCount
-  // bhi stock se nikalna hai to bata dena, phir yeha add karenge.
-});
-  // Category totals
-  const catMap = {};
+    Object.values(fineMap).forEach(line => {
+      const ck = `${line.invType}|||${line.plasticCategory}`;
 
-  Object.values(fineMap).forEach(line => {
-    const ck = `${line.invType}|||${line.plasticCategory}`;
+      const r = catMap[ck] = catMap[ck] || {
+        invType: line.invType,
+        plasticCategory: line.plasticCategory,
+        opening: 0,
+        received: 0,
+        batchCount: 0,
+        damaged: 0,
+        moved: 0,
+        extraCount: 0,
+        total: 0,
+        closing: 0,
+      };
 
-    const r = catMap[ck] = catMap[ck] || {
-      invType: line.invType,
-      plasticCategory: line.plasticCategory,
+      r.opening += line.opening;
+      r.received += line.received;
+      r.batchCount += line.batchCount;
+      r.damaged += line.damaged;
+      r.moved += line.moved;
+      r.extraCount += line.extraCount;
+      r.closing += line.closing;
+    });
 
-      opening: 0,
-      received: 0,
-      batchCount: 0,
-      damaged: 0,
-      moved: 0,
-      extraCount: 0,
-      total: 0,
-      closing: 0,
-    };
+    Object.values(catMap).forEach(r => {
+      r.total = r.batchCount + r.extraCount;
+    });
 
-    r.opening += line.opening;
-    r.received += line.received;
-    r.batchCount += line.batchCount;
-    r.damaged += line.damaged;
-    r.moved += line.moved;
-    r.extraCount += line.extraCount;
-    r.closing += line.closing;
-  });
-
-  Object.values(catMap).forEach(r => {
-    r.total = r.batchCount + r.extraCount;
-  });
-
-  return catMap;
-}, [issuanceEntries, closing, currentSite]);
+    return catMap;
+  }, [issuanceEntries, closing, currentSite]);
 
   const issuanceTotals = useMemo(() => {
-  const t = Object.values(issuanceGrouped).reduce(
-    (s, r) => ({
-      opening: s.opening + r.opening,
-      received: s.received + r.received,
-      batchCount: s.batchCount + r.batchCount,
-      damaged: s.damaged + r.damaged,
-      moved: s.moved + r.moved,
-      extraCount: s.extraCount + r.extraCount,
-      closing: s.closing + r.closing,
-    }),
-    {
-      opening: 0,
-      received: 0,
-      batchCount: 0,
-      damaged: 0,
-      moved: 0,
-      extraCount: 0,
-      closing: 0,
-    }
-  );
+    const t = Object.values(issuanceGrouped).reduce(
+      (s, r) => ({
+        opening: s.opening + r.opening,
+        received: s.received + r.received,
+        batchCount: s.batchCount + r.batchCount,
+        damaged: s.damaged + r.damaged,
+        moved: s.moved + r.moved,
+        extraCount: s.extraCount + r.extraCount,
+        closing: s.closing + r.closing,
+      }),
+      {
+        opening: 0,
+        received: 0,
+        batchCount: 0,
+        damaged: 0,
+        moved: 0,
+        extraCount: 0,
+        closing: 0,
+      }
+    );
 
-  t.total = t.batchCount + t.extraCount;
+    t.total = t.batchCount + t.extraCount;
 
-  return t;
-}, [issuanceGrouped]);
+    return t;
+  }, [issuanceGrouped]);
 
   const issuanceCats = useMemo(() => [...new Set(reportEntries.filter(e => e.cardType === issuanceType).map(e => e.plasticCategory).filter(Boolean))].sort(), [reportEntries, issuanceType]);
 
@@ -632,42 +587,42 @@ Object.values(fineMap).forEach(line => {
     const dataRows = Object.values(issuanceGrouped).sort((a, b) => (a.plasticCategory || "").localeCompare(b.plasticCategory || ""));
     downloadStyledExcel({
       title: `Debit Card Issuance Request — ${currentSite} — Batch: ${issuanceBatch || "ALL"} — ${pLabel || "All"}`,
-     headers: [
-  "S.No",
-  "Plastic Type",
-  "Opening",
-  "Stock Received",
-  "Batch Count",
-  "Damaged",
-  "Moved",
-  "Extra Count",
-  "Total",
-  "Closing"
-],
-rows: dataRows.map((r, i) => [
-  i + 1,
-  r.plasticCategory,
-  r.opening,
-  r.received,
-  r.batchCount,
-  r.damaged,
-  r.moved,
-  r.extraCount,
-  r.total,
-  r.closing
-]),
-footerRow: [
-  "",
-  "GRAND TOTAL",
-  issuanceTotals.opening,
-  issuanceTotals.received,
-  issuanceTotals.batchCount,
-  issuanceTotals.damaged,
-  issuanceTotals.moved,
-  issuanceTotals.extraCount,
-  issuanceTotals.total,
-  issuanceTotals.closing
-],
+      headers: [
+        "S.No",
+        "Plastic Type",
+        "Opening",
+        "Stock Received",
+        "PRODUCED",
+        "Damaged",
+        "Moved",
+        "Extra Count",
+        "Total",
+        "Closing"
+      ],
+      rows: dataRows.map((r, i) => [
+        i + 1,
+        r.plasticCategory,
+        r.opening,
+        r.received,
+        r.batchCount,
+        r.damaged,
+        r.moved,
+        r.extraCount,
+        r.total,
+        r.closing
+      ]),
+      footerRow: [
+        "",
+        "GRAND TOTAL",
+        issuanceTotals.opening,
+        issuanceTotals.received,
+        issuanceTotals.batchCount,
+        issuanceTotals.damaged,
+        issuanceTotals.moved,
+        issuanceTotals.extraCount,
+        issuanceTotals.total,
+        issuanceTotals.closing
+      ],
       filename: `Issuance_${issuanceType}_${pLabel || "All"}.xls`,
     });
   }, [issuanceGrouped, issuanceTotals, issuanceType, issuancePeriod, issuanceMonth, issuanceDate, issuanceBatch, currentSite]);
@@ -679,43 +634,41 @@ footerRow: [
     downloadStyledPDF({
       title: `Issuance Report — ${issuanceType} | ${currentSite} | ${pLabel || "All"} | ${stuffingLabel}`,
       headers: [
-  "S.No",
-  "Plastic Type",
-  "Opening",
-  "Stock Received",
-  "Batch Count",
-  "Damaged",
-  "Moved",
-  "Extra Count",
-  "Total",
-  "Closing"
-],
-
-rows: dataRows.map((r, i) => [
-  i + 1,
-  r.plasticCategory,
-  fmt(r.opening),
-  fmt(r.received),
-  fmt(r.batchCount),
-  fmt(r.damaged),
-  fmt(r.moved),
-  fmt(r.extraCount),
-  fmt(r.total),
-  fmt(r.closing)
-]),
-
-footerRow: [
-  "",
-  "GRAND TOTAL",
-  fmt(issuanceTotals.opening),
-  fmt(issuanceTotals.received),
-  fmt(issuanceTotals.batchCount),
-  fmt(issuanceTotals.damaged),
-  fmt(issuanceTotals.moved),
-  fmt(issuanceTotals.extraCount),
-  fmt(issuanceTotals.total),
-  fmt(issuanceTotals.closing)
-],
+        "S.No",
+        "Plastic Type",
+        "Opening",
+        "Stock Received",
+        "PRODUCED",
+        "Damaged",
+        "Moved",
+        "Extra Count",
+        "Total",
+        "Closing"
+      ],
+      rows: dataRows.map((r, i) => [
+        i + 1,
+        r.plasticCategory,
+        fmt(r.opening),
+        fmt(r.received),
+        fmt(r.batchCount),
+        fmt(r.damaged),
+        fmt(r.moved),
+        fmt(r.extraCount),
+        fmt(r.total),
+        fmt(r.closing)
+      ]),
+      footerRow: [
+        "",
+        "GRAND TOTAL",
+        fmt(issuanceTotals.opening),
+        fmt(issuanceTotals.received),
+        fmt(issuanceTotals.batchCount),
+        fmt(issuanceTotals.damaged),
+        fmt(issuanceTotals.moved),
+        fmt(issuanceTotals.extraCount),
+        fmt(issuanceTotals.total),
+        fmt(issuanceTotals.closing)
+      ],
       numericFromIndex: 2,
     });
   }, [issuanceGrouped, issuanceTotals, issuanceType, issuancePeriod, issuanceMonth, issuanceDate, currentSite, issuancePageSize]);
@@ -905,7 +858,7 @@ footerRow: [
     const dataRows = Object.values(returnGrouped).flat();
     downloadStyledExcel({
       title: `Debit Card Return Report — ${returnType} — ${currentSite} — ${periodLabel || "All"}`,
-      headers: ["S.No", "Plastic Type", "Sub Product", "Scheme", "Batch Count", "Extra Count", "Total Issuance", "Damaged", "Extra Return"],
+      headers: ["S.No", "Plastic Type", "Sub Product", "Scheme", "PRODUCED", "Extra Count", "Total Issuance", "Damaged", "Extra Return"],
       rows: dataRows.map((r, i) => [i + 1, r.plasticCategory, r.subProduct, r.scheme, r.batchCount, r.extraCount, r.totalIssuance, r.damaged, r.extraReturn]),
       footerRow: ["", "GRAND TOTAL", "", "", returnTotals.batchCount, returnTotals.extraCount, returnTotals.totalIssuance, returnTotals.damaged, returnTotals.extraReturn],
       filename: `Return_${returnType}_${periodLabel || "All"}.xls`,
@@ -917,7 +870,7 @@ footerRow: [
     const dataRows = Object.values(returnGrouped).flat();
     downloadStyledPDF({
       title: `Return Report — ${returnType} | ${currentSite} | ${pLabel || "All"}`,
-      headers: ["S.No", "Plastic Type", "Sub Product", "Scheme", "Batch Count", "Extra Count", "Total Issuance", "Damaged", "Extra Return"],
+      headers: ["S.No", "Plastic Type", "Sub Product", "Scheme", "PRODUCED", "Extra Count", "Total Issuance", "Damaged", "Extra Return"],
       rows: dataRows.map((r, i) => [i + 1, r.plasticCategory, r.subProduct || "—", r.scheme, fmt(r.batchCount), fmt(r.extraCount), fmt(r.totalIssuance), fmt(r.damaged), fmt(r.extraReturn)]),
       footerRow: ["", "GRAND TOTAL", "", "", fmt(returnTotals.batchCount), fmt(returnTotals.extraCount), fmt(returnTotals.totalIssuance), fmt(returnTotals.damaged), fmt(returnTotals.extraReturn)],
       filename: `Return_${returnType}_${pLabel || "All"}.pdf`,
@@ -929,8 +882,8 @@ footerRow: [
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text }}>Reports</h1>
-        <p style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}>Select a report type to view.</p>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: C.text }}>Reports</h1>
+        <p style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }}>Select a report type to view.</p>
       </div>
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 28 }}>
@@ -942,7 +895,7 @@ footerRow: [
           ["range", "📊 Range Report"],
         ].map(([v, l]) => (
           <div key={v} onClick={() => setActiveReport(v)} style={{
-            padding: "10px 22px", borderRadius: 10, cursor: "pointer", fontSize: 13, fontWeight: 700,
+            padding: "12px 24px", borderRadius: 10, cursor: "pointer", fontSize: 14, fontWeight: 700,
             background: activeReport === v ? C.navy : "#fff",
             color: activeReport === v ? "#fff" : C.textMid,
             border: `2px solid ${activeReport === v ? C.navy : C.border}`,
@@ -955,7 +908,7 @@ footerRow: [
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {[["PLASTIC", "💳 Plastic"], ["MAILER", "📬 Mailer"], ["ENVELOPE", "✉️ Envelope"]].map(([v, l]) => (
           <div key={v} onClick={() => setReportInvType(v)} style={{
-            padding: "8px 18px", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 600,
+            padding: "10px 20px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600,
             background: reportInvType === v ? C.blue : "#fff",
             color: reportInvType === v ? "#fff" : C.textMid,
             border: `1.5px solid ${reportInvType === v ? C.blue : C.border}`,
@@ -968,132 +921,109 @@ footerRow: [
 
       {activeReport === "issuance" && (
         <Card style={{ marginBottom: 24 }}>
-          <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+          <div style={{ padding: "18px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: C.blue }}>Issuance Report — {issuanceType}</div>
-              <div style={{ fontSize: 11, color: C.textFaint, marginTop: 2 }}>Opening · Batch Count · Extra Count · Total · Closing</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: C.blue }}>Issuance Report — {issuanceType}</div>
+              <div style={{ fontSize: 12, color: C.textFaint, marginTop: 3 }}>Opening · PRODUCED · Extra Count · Total · Closing</div>
             </div>
-            <div style={{ display: "flex", gap: 6 }}>
-              <button onClick={downloadIssuanceCSV} style={{ height: 34, padding: "0 16px", borderRadius: 8, border: "none", background: C.green, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>⬇ CSV</button>
-              <button onClick={downloadIssuancePDF} style={{ height: 34, padding: "0 16px", borderRadius: 8, border: "none", background: C.red, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>⬇ PDF</button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={downloadIssuanceCSV} style={{ height: 38, padding: "0 18px", borderRadius: 8, border: "none", background: C.green, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬇ CSV</button>
+              <button onClick={downloadIssuancePDF} style={{ height: 38, padding: "0 18px", borderRadius: 8, border: "none", background: C.red, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬇ PDF</button>
             </div>
           </div>
 
-          <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end", background: C.surface }}>
+          <div style={{ padding: "16px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end", background: C.surface }}>
             <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", border: `1.5px solid ${C.border}` }}>
               {["DEBIT", "CREDIT"].map(t => (
-                <div key={t} onClick={() => setIssuanceType(t)} style={{ height: 34, padding: "0 16px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 12, fontWeight: 600, background: issuanceType === t ? (t === "DEBIT" ? C.blue : C.red) : "#fff", color: issuanceType === t ? "#fff" : (t === "DEBIT" ? C.blue : C.red) }}>{t === "DEBIT" ? "💳" : "💎"} {t}</div>
+                <div key={t} onClick={() => setIssuanceType(t)} style={{ height: 38, padding: "0 18px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 13, fontWeight: 600, background: issuanceType === t ? (t === "DEBIT" ? C.blue : C.red) : "#fff", color: issuanceType === t ? "#fff" : (t === "DEBIT" ? C.blue : C.red) }}>{t === "DEBIT" ? "💳" : "💎"} {t}</div>
               ))}
             </div>
             <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", border: `1.5px solid ${C.border}` }}>
               {[["monthly", "Monthly"], ["daily", "Daily"]].map(([v, l]) => (
-                <div key={v} onClick={() => setIssuancePeriod(v)} style={{ height: 34, padding: "0 14px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 12, fontWeight: 600, background: issuancePeriod === v ? C.navy : "#fff", color: issuancePeriod === v ? "#fff" : C.textMid }}>{l}</div>
+                <div key={v} onClick={() => setIssuancePeriod(v)} style={{ height: 38, padding: "0 16px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 13, fontWeight: 600, background: issuancePeriod === v ? C.navy : "#fff", color: issuancePeriod === v ? "#fff" : C.textMid }}>{l}</div>
               ))}
             </div>
-            <input type={issuancePeriod === "monthly" ? "month" : "date"} value={issuancePeriod === "monthly" ? issuanceMonth : issuanceDate} onChange={e => issuancePeriod === "monthly" ? setIssuanceMonth(e.target.value) : setIssuanceDate(e.target.value)} style={{ height: 34, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 10px", fontSize: 12, outline: "none" }} />
-            <select value={issuanceCat} onChange={e => setIssuanceCat(e.target.value)} style={{ height: 34, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 10px", fontSize: 12, outline: "none", minWidth: 160 }}>
+            <input type={issuancePeriod === "monthly" ? "month" : "date"} value={issuancePeriod === "monthly" ? issuanceMonth : issuanceDate} onChange={e => issuancePeriod === "monthly" ? setIssuanceMonth(e.target.value) : setIssuanceDate(e.target.value)} style={{ height: 38, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 12px", fontSize: 13, outline: "none" }} />
+            <select value={issuanceCat} onChange={e => setIssuanceCat(e.target.value)} style={{ height: 38, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 12px", fontSize: 13, outline: "none", minWidth: 180 }}>
               <option value="">All Categories</option>
               {issuanceCats.map(c => <option key={c}>{c}</option>)}
             </select>
             <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", border: `1.5px solid ${C.border}` }}>
               {[["category", "📁 Category"], ["subproduct", "🔖 Sub Product"]].map(([v, l]) => (
-                <div key={v} onClick={() => setIssuanceView(v)} style={{ height: 34, padding: "0 12px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 11, fontWeight: 600, background: issuanceView === v ? C.navy : "#fff", color: issuanceView === v ? "#fff" : C.textMid }}>{l}</div>
+                <div key={v} onClick={() => setIssuanceView(v)} style={{ height: 38, padding: "0 14px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 12, fontWeight: 600, background: issuanceView === v ? C.navy : "#fff", color: issuanceView === v ? "#fff" : C.textMid }}>{l}</div>
               ))}
             </div>
             {issuanceCat && reportEntries.find(e => e.plasticCategory === issuanceCat && e.invType === "MAILER") && (
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                <label style={{ fontSize: 10, fontWeight: 600, color: C.textFaint, textTransform: "uppercase" }}>Page Size</label>
+                <label style={{ fontSize: 11, fontWeight: 600, color: C.textFaint, textTransform: "uppercase" }}>Page Size</label>
                 <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", border: `1.5px solid ${C.border}` }}>
                   {[["A4", "A4"], ["LEGAL", "Legal"]].map(([v, l]) => (
-                    <div key={v} onClick={() => setIssuancePageSize(v)} style={{ height: 34, padding: "0 14px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 11, fontWeight: 600, background: issuancePageSize === v ? C.navy : "#fff", color: issuancePageSize === v ? "#fff" : C.textMid, transition: "all .15s" }}>{l}</div>
+                    <div key={v} onClick={() => setIssuancePageSize(v)} style={{ height: 38, padding: "0 16px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 12, fontWeight: 600, background: issuancePageSize === v ? C.navy : "#fff", color: issuancePageSize === v ? "#fff" : C.textMid, transition: "all .15s" }}>{l}</div>
                   ))}
                 </div>
               </div>
             )}
-            <button onClick={() => { setIssuanceBatch(""); setIssuanceMonth(""); setIssuanceDate(""); setIssuanceCat(""); setIssuancePageSize("A4"); }} style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", color: C.textMuted }}>Clear</button>
+            <button onClick={() => { setIssuanceBatch(""); setIssuanceMonth(""); setIssuanceDate(""); setIssuanceCat(""); setIssuancePageSize("A4"); }} style={{ height: 38, padding: "0 14px", borderRadius: 8, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", color: C.textMuted }}>Clear</button>
           </div>
 
           <div style={{
-  display: "grid",
-  gridTemplateColumns: "repeat(8,1fr)",
-  gap: 10,
-  padding: "14px 20px",
-  borderBottom: `1px solid ${C.border}`,
-  background: C.surfaceAlt
-}}>
-  {[
-    ["Opening", issuanceTotals.opening, C.textMid],
-    ["Received", issuanceTotals.received, C.green],
-    ["Batch Count", issuanceTotals.batchCount, C.blue],
-    ["Damaged", issuanceTotals.damaged, C.red],
-    ["Moved", issuanceTotals.moved, C.orange],
-    ["Extra Count", issuanceTotals.extraCount, C.purple],
-    ["Grand Total", issuanceTotals.total, C.navy],
-    ["Closing", issuanceTotals.closing, C.textMid],
-  ].map(([l, v, c]) => (
-    <StatBox key={l} label={l} value={v} color={c} />
-  ))}
-</div>
+            display: "grid",
+            gridTemplateColumns: "repeat(8,1fr)",
+            gap: 12,
+            padding: "16px 24px",
+            borderBottom: `1px solid ${C.border}`,
+            background: C.surfaceAlt
+          }}>
+            {[
+              ["Opening", issuanceTotals.opening, C.textMid],
+              ["Received", issuanceTotals.received, C.green],
+              ["PRODUCED", issuanceTotals.batchCount, C.blue],
+              ["Damaged", issuanceTotals.damaged, C.red],
+              ["Moved", issuanceTotals.moved, C.orange],
+              ["Extra Count", issuanceTotals.extraCount, C.purple],
+              ["Grand Total", issuanceTotals.total, C.navy],
+              ["Closing", issuanceTotals.closing, C.textMid],
+            ].map(([l, v, c]) => (
+              <StatBox key={l} label={l} value={v} color={c} />
+            ))}
+          </div>
+
           {!Object.keys(issuanceGrouped).length ? (
-            <div style={{ padding: 36, textAlign: "center", color: C.textFaint, fontSize: 13 }}>No entries for selected period.</div>
+            <div style={{ padding: 40, textAlign: "center", color: C.textFaint, fontSize: 14 }}>No entries for selected period.</div>
           ) : issuanceView === "category" ? (
             <BaseTable
-          headers={[
-            "Inv Type",
-            "Plastic Category",
-            "Opening",
-            "Stock Received",
-            "Batch Count",
-            "Damaged",
-            "Moved",
-            "Extra Count",
-            "Total",
-            "Closing"
-          ]}
-          rightAlignIndex={1}
-        >
+              headers={[
+                "Inv Type",
+                "Plastic Category",
+                "Opening",
+                "Stock Received",
+                "PRODUCED",
+                "Damaged",
+                "Moved",
+                "Extra Count",
+                "Total",
+                "Closing"
+              ]}
+              rightAlignIndex={1}
+            >
               {Object.values(issuanceGrouped).sort((a, b) => (a.plasticCategory || "").localeCompare(b.plasticCategory || "")).map((row, idx) => (
                 <tr key={idx} style={{ borderBottom: `1px solid ${C.border}`, background: idx % 2 === 0 ? "#fff" : C.surface }}>
-                  <td style={{ padding: "8px 12px" }}><InvTypePill type={row.invType} /></td>
-                  <td style={{ padding: "8px 12px", fontWeight: 600, color: C.text }}>{row.plasticCategory}</td>
-                  <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", color: C.textMid }}>{fmt(row.opening)}</td>
-                  <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", color: C.green }}>{row.received > 0 ? fmt(row.received) : "—"}</td>
-                  <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.batchCount > 0 ? C.blue : C.border }}>{row.batchCount > 0 ? fmt(row.batchCount) : "—"}</td>
-                  <td style={{
-  padding: "8px 12px",
-  textAlign: "right",
-  fontFamily: "monospace",
-  color: row.damaged > 0 ? C.red : C.border
-}}>
-  {row.damaged > 0 ? fmt(row.damaged) : "—"}
-</td>
-
-<td style={{
-  padding: "8px 12px",
-  textAlign: "right",
-  fontFamily: "monospace",
-  fontWeight: 600,
-  color: row.moved > 0 ? C.orange : C.border
-}}>
-  {row.moved > 0 ? fmt(row.moved) : "—"}
-</td>
-
-<td style={{
-  padding: "8px 12px",
-  textAlign: "right",
-  fontFamily: "monospace",
-  fontWeight: 600,
-  color: row.extraCount > 0 ? C.purple : C.border
-}}>
-  {row.extraCount > 0 ? fmt(row.extraCount) : "—"}
-</td>
-                  <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.text, background: C.greenLight }}>{fmt(row.total)}</td>
-                  <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", color: C.textMid }}>{fmt(row.closing)}</td>
+                  <td style={{ padding: "10px 14px" }}><InvTypePill type={row.invType} /></td>
+                  <td style={{ padding: "10px 14px", fontWeight: 600, color: C.text }}>{row.plasticCategory}</td>
+                  <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", color: C.textMid }}>{fmt(row.opening)}</td>
+                  <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", color: C.green }}>{row.received > 0 ? fmt(row.received) : "—"}</td>
+                  <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.batchCount > 0 ? C.blue : C.border }}>{row.batchCount > 0 ? fmt(row.batchCount) : "—"}</td>
+                  <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", color: row.damaged > 0 ? C.red : C.border }}>{row.damaged > 0 ? fmt(row.damaged) : "—"}</td>
+                  <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.moved > 0 ? C.orange : C.border }}>{row.moved > 0 ? fmt(row.moved) : "—"}</td>
+                  <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.extraCount > 0 ? C.purple : C.border }}>{row.extraCount > 0 ? fmt(row.extraCount) : "—"}</td>
+                  <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.text, background: C.greenLight }}>{fmt(row.total)}</td>
+                  <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", color: C.textMid }}>{fmt(row.closing)}</td>
                 </tr>
               ))}
               <tr style={{ background: C.navy, color: "#fff", fontWeight: 700 }}>
-                <td colSpan={2} style={{ padding: "10px 12px" }}>GRAND TOTAL — {Object.keys(issuanceGrouped).length} categories</td>
-{["opening", "received", "batchCount", "damaged", "moved", "extraCount", "total", "closing"].map((k, i) => (                  <td key={k} style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", color: i === 1 || i === 5 ? "#34D399" : i === 2 ? "#60A5FA" : i === 3 ? "#F87171" : i === 4 ? "#A78BFA" : "#fff" }}>{fmt(issuanceTotals[k])}</td>
+                <td colSpan={2} style={{ padding: "12px 14px", fontSize: 13 }}>GRAND TOTAL — {Object.keys(issuanceGrouped).length} categories</td>
+                {["opening", "received", "batchCount", "damaged", "moved", "extraCount", "total", "closing"].map((k, i) => (
+                  <td key={k} style={{ padding: "12px 14px", textAlign: "right", fontFamily: "monospace", fontSize: 13, color: i === 1 || i === 5 ? "#34D399" : i === 2 ? "#60A5FA" : i === 3 ? "#F87171" : i === 4 ? "#A78BFA" : "#fff" }}>{fmt(issuanceTotals[k])}</td>
                 ))}
               </tr>
             </BaseTable>
@@ -1103,54 +1033,54 @@ footerRow: [
 
       {activeReport === "return" && (
         <Card style={{ marginBottom: 24 }}>
-          <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+          <div style={{ padding: "18px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: C.red }}>Return Report — {returnType}</div>
-              <div style={{ fontSize: 11, color: C.textFaint, marginTop: 2 }}>Batch Count · Extra Count · Total Issuance · Damaged · Extra Return</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: C.red }}>Return Report — {returnType}</div>
+              <div style={{ fontSize: 12, color: C.textFaint, marginTop: 3 }}>PRODUCED · Extra Count · Total Issuance · Damaged · Extra Return</div>
             </div>
-            <div style={{ display: "flex", gap: 6 }}>
-              <button onClick={downloadReturnCSV} style={{ height: 34, padding: "0 16px", borderRadius: 8, border: "none", background: C.green, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>⬇ CSV</button>
-              <button onClick={downloadReturnPDF} style={{ height: 34, padding: "0 16px", borderRadius: 8, border: "none", background: C.red, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>⬇ PDF</button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={downloadReturnCSV} style={{ height: 38, padding: "0 18px", borderRadius: 8, border: "none", background: C.green, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬇ CSV</button>
+              <button onClick={downloadReturnPDF} style={{ height: 38, padding: "0 18px", borderRadius: 8, border: "none", background: C.red, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬇ PDF</button>
             </div>
           </div>
 
-          <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end", background: C.surface }}>
+          <div style={{ padding: "16px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end", background: C.surface }}>
             <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", border: `1.5px solid ${C.border}` }}>
               {["DEBIT", "CREDIT"].map(t => (
-                <div key={t} onClick={() => setReturnType(t)} style={{ height: 34, padding: "0 16px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 12, fontWeight: 600, background: returnType === t ? (t === "DEBIT" ? C.blue : C.red) : "#fff", color: returnType === t ? "#fff" : (t === "DEBIT" ? C.blue : C.red), transition: "all .15s" }}>{t === "DEBIT" ? "💳" : "💎"} {t}</div>
+                <div key={t} onClick={() => setReturnType(t)} style={{ height: 38, padding: "0 18px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 13, fontWeight: 600, background: returnType === t ? (t === "DEBIT" ? C.blue : C.red) : "#fff", color: returnType === t ? "#fff" : (t === "DEBIT" ? C.blue : C.red), transition: "all .15s" }}>{t === "DEBIT" ? "💳" : "💎"} {t}</div>
               ))}
             </div>
             <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", border: `1.5px solid ${C.border}` }}>
               {[["monthly", "Monthly"], ["daily", "Daily"]].map(([v, l]) => (
-                <div key={v} onClick={() => setReturnPeriod(v)} style={{ height: 34, padding: "0 14px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 12, fontWeight: 600, background: returnPeriod === v ? C.navy : "#fff", color: returnPeriod === v ? "#fff" : C.textMid, transition: "all .15s" }}>{l}</div>
+                <div key={v} onClick={() => setReturnPeriod(v)} style={{ height: 38, padding: "0 16px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 13, fontWeight: 600, background: returnPeriod === v ? C.navy : "#fff", color: returnPeriod === v ? "#fff" : C.textMid, transition: "all .15s" }}>{l}</div>
               ))}
             </div>
             {returnPeriod === "monthly"
-              ? <input type="month" value={returnMonth} onChange={e => setReturnMonth(e.target.value)} style={{ height: 34, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 10px", fontSize: 12, outline: "none" }} />
-              : <input type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} style={{ height: 34, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 10px", fontSize: 12, outline: "none" }} />
+              ? <input type="month" value={returnMonth} onChange={e => setReturnMonth(e.target.value)} style={{ height: 38, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 12px", fontSize: 13, outline: "none" }} />
+              : <input type="date" value={returnDate} onChange={e => setReturnDate(e.target.value)} style={{ height: 38, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 12px", fontSize: 13, outline: "none" }} />
             }
-            <select value={returnCat} onChange={e => setReturnCat(e.target.value)} style={{ height: 34, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 10px", fontSize: 12, outline: "none", minWidth: 160 }}>
+            <select value={returnCat} onChange={e => setReturnCat(e.target.value)} style={{ height: 38, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 12px", fontSize: 13, outline: "none", minWidth: 180 }}>
               <option value="">All Categories</option>
               {returnCats.map(c => <option key={c}>{c}</option>)}
             </select>
-            <button onClick={() => { setReturnMonth(""); setReturnDate(""); setReturnCat(""); }} style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", color: C.textMuted }}>Clear</button>
+            <button onClick={() => { setReturnMonth(""); setReturnDate(""); setReturnCat(""); }} style={{ height: 38, padding: "0 14px", borderRadius: 8, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", color: C.textMuted }}>Clear</button>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, padding: "14px 20px", borderBottom: `1px solid ${C.border}`, background: C.surfaceAlt }}>
-            {[["Batch Count", returnTotals.batchCount, C.blue], ["Extra Count", returnTotals.extraCount, C.purple], ["Total Issuance", returnTotals.totalIssuance, C.text], ["Damaged", returnTotals.damaged, C.red], ["Extra Return", returnTotals.extraReturn, C.green]].map(([l, v, c]) => (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 12, padding: "16px 24px", borderBottom: `1px solid ${C.border}`, background: C.surfaceAlt }}>
+            {[["PRODUCED", returnTotals.batchCount, C.blue], ["Extra Count", returnTotals.extraCount, C.purple], ["Total Issuance", returnTotals.totalIssuance, C.text], ["Damaged", returnTotals.damaged, C.red], ["Extra Return", returnTotals.extraReturn, C.green]].map(([l, v, c]) => (
               <StatBox key={l} label={l} value={v} color={c} />
             ))}
           </div>
 
           {!Object.keys(returnGrouped).length
-            ? <div style={{ padding: "36px", textAlign: "center", color: C.textFaint, fontSize: 13 }}>No entries for selected period.</div>
+            ? <div style={{ padding: "40px", textAlign: "center", color: C.textFaint, fontSize: 14 }}>No entries for selected period.</div>
             : (
               <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                   <thead>
                     <tr style={{ background: C.navy }}>
-                      {["Category", "Sub Product", "Scheme", "Batch Count", "Extra Count", "Total Issuance", "Damaged", "Extra Return"].map((h, i) => (
-                        <th key={i} style={{ padding: "9px 12px", color: "rgba(255,255,255,.7)", fontSize: 9, fontWeight: 700, textTransform: "uppercase", textAlign: i > 2 ? "right" : "left" }}>{h}</th>
+                      {["Category", "Sub Product", "Scheme", "PRODUCED", "Extra Count", "Total Issuance", "Damaged", "Extra Return"].map((h, i) => (
+                        <th key={i} style={{ padding: "12px 14px", color: "rgba(255,255,255,.85)", fontSize: 11, fontWeight: 700, textTransform: "uppercase", textAlign: i > 2 ? "right" : "left" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -1158,18 +1088,18 @@ footerRow: [
                     {Object.entries(returnGrouped).map(([cat, rows]) => (
                       <React.Fragment key={cat}>
                         <tr style={{ background: "#334155" }}>
-                          <td colSpan={8} style={{ padding: "6px 12px", fontSize: 10, fontWeight: 700, color: "#fff" }}>📁 {cat}</td>
+                          <td colSpan={8} style={{ padding: "8px 14px", fontSize: 12, fontWeight: 700, color: "#fff" }}>📁 {cat}</td>
                         </tr>
                         {rows.map((row, idx) => (
                           <tr key={idx} style={{ borderBottom: `1px solid ${C.border}`, background: idx % 2 === 0 ? "#fff" : C.surface }}>
-                            <td style={{ padding: "8px 12px", fontSize: 11, color: C.textMid }}>{row.plasticCategory}</td>
-                            <td style={{ padding: "8px 12px", fontWeight: 600, color: C.text }}>{row.subProduct || "—"}</td>
-                            <td style={{ padding: "8px 12px", fontSize: 10, color: C.textMuted }}>{row.scheme}</td>
-                            <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.batchCount > 0 ? C.blue : C.border }}>{row.batchCount > 0 ? fmt(row.batchCount) : "—"}</td>
-                            <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.extraCount > 0 ? C.purple : C.border }}>{row.extraCount > 0 ? fmt(row.extraCount) : "—"}</td>
-                            <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: C.text }}>{fmt(row.totalIssuance)}</td>
-                            <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.damaged > 0 ? C.red : C.border }}>{row.damaged > 0 ? fmt(row.damaged) : "—"}</td>
-                            <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.green, background: C.greenLight }}>{fmt(row.extraReturn)}</td>
+                            <td style={{ padding: "10px 14px", fontSize: 13, color: C.textMid }}>{row.plasticCategory}</td>
+                            <td style={{ padding: "10px 14px", fontWeight: 600, color: C.text }}>{row.subProduct || "—"}</td>
+                            <td style={{ padding: "10px 14px", fontSize: 12, color: C.textMuted }}>{row.scheme}</td>
+                            <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.batchCount > 0 ? C.blue : C.border }}>{row.batchCount > 0 ? fmt(row.batchCount) : "—"}</td>
+                            <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.extraCount > 0 ? C.purple : C.border }}>{row.extraCount > 0 ? fmt(row.extraCount) : "—"}</td>
+                            <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: C.text }}>{fmt(row.totalIssuance)}</td>
+                            <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: row.damaged > 0 ? C.red : C.border }}>{row.damaged > 0 ? fmt(row.damaged) : "—"}</td>
+                            <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.green, background: C.greenLight }}>{fmt(row.extraReturn)}</td>
                           </tr>
                         ))}
                       </React.Fragment>
@@ -1177,12 +1107,12 @@ footerRow: [
                   </tbody>
                   <tfoot>
                     <tr style={{ background: C.navy }}>
-                      <td colSpan={3} style={{ padding: "10px 12px", fontSize: 11, fontWeight: 700, color: "#fff" }}>GRAND TOTAL</td>
-                      <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 12, color: "#60A5FA" }}>{fmt(returnTotals.batchCount)}</td>
-                      <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 12, color: "#A78BFA" }}>{fmt(returnTotals.extraCount)}</td>
-                      <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 12, color: "#FFF" }}>{fmt(returnTotals.totalIssuance)}</td>
-                      <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 12, color: "#F87171" }}>{fmt(returnTotals.damaged)}</td>
-                      <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 13, color: "#34D399" }}>{fmt(returnTotals.extraReturn)}</td>
+                      <td colSpan={3} style={{ padding: "12px 14px", fontSize: 13, fontWeight: 700, color: "#fff" }}>GRAND TOTAL</td>
+                      <td style={{ padding: "12px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 14, color: "#60A5FA" }}>{fmt(returnTotals.batchCount)}</td>
+                      <td style={{ padding: "12px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 14, color: "#A78BFA" }}>{fmt(returnTotals.extraCount)}</td>
+                      <td style={{ padding: "12px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 14, color: "#FFF" }}>{fmt(returnTotals.totalIssuance)}</td>
+                      <td style={{ padding: "12px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 14, color: "#F87171" }}>{fmt(returnTotals.damaged)}</td>
+                      <td style={{ padding: "12px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 15, color: "#34D399" }}>{fmt(returnTotals.extraReturn)}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -1194,59 +1124,59 @@ footerRow: [
 
       {activeReport === "monthly" && (
         <Card style={{ marginBottom: 24 }}>
-          <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.border}` }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: C.green }}>📅 Monthly Report</div>
-            <div style={{ fontSize: 11, color: C.textFaint, marginTop: 2 }}>Day-by-day breakdown — shared data</div>
+          <div style={{ padding: "18px 24px", borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: C.green }}>📅 Monthly Report</div>
+            <div style={{ fontSize: 12, color: C.textFaint, marginTop: 3 }}>Day-by-day breakdown — shared data</div>
           </div>
-          <div style={{ padding: 20 }}>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 16 }}>
-              <FormField label="Month"><input type="month" value={reportMonth} onChange={e => setReportMonth(e.target.value)} style={{ height: 34, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 10px", fontSize: 12, outline: "none" }} /></FormField>
+          <div style={{ padding: 24 }}>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 20 }}>
+              <FormField label="Month"><input type="month" value={reportMonth} onChange={e => setReportMonth(e.target.value)} style={{ height: 38, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 12px", fontSize: 13, outline: "none" }} /></FormField>
               {[
-                ["Plastic Type", reportPlasticCat, e => { setReportPlasticCat(e.target.value); setReportSub(""); }, monthlyPlasticCats, "— All Types —", 150],
-                ["Sub Product", reportSub, e => setReportSub(e.target.value), subs, "— All Sub Products —", 180],
-                ["Batch", reportBatch, e => setReportBatch(e.target.value), monthlyBatches, "— All Batches —", 130],
-                ["Segment", reportSegment, e => setReportSegment(e.target.value), monthlySegments, "— All Segments —", 130]
+                ["Plastic Type", reportPlasticCat, e => { setReportPlasticCat(e.target.value); setReportSub(""); }, monthlyPlasticCats, "— All Types —", 170],
+                ["Sub Product", reportSub, e => setReportSub(e.target.value), subs, "— All Sub Products —", 200],
+                ["Batch", reportBatch, e => setReportBatch(e.target.value), monthlyBatches, "— All Batches —", 150],
+                ["Segment", reportSegment, e => setReportSegment(e.target.value), monthlySegments, "— All Segments —", 150]
               ].map(([l, val, change, opts, ph, w]) => (
                 <FormField key={l} label={l} width={w}>
-                  <select value={val} onChange={change} style={{ height: 34, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 10px", fontSize: 12, outline: "none" }}>
+                  <select value={val} onChange={change} style={{ height: 38, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 12px", fontSize: 13, outline: "none" }}>
                     <option value="">{ph}</option>
                     {opts.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                 </FormField>
               ))}
-              <div style={{ display: "flex", gap: 6 }}>
+              <div style={{ display: "flex", gap: 8 }}>
                 {reportMonth && monthlyData.length > 0 && (
                   <>
-                    <button onClick={downloadMonthlyCSV} style={{ height: 34, padding: "0 16px", borderRadius: 8, border: "none", background: C.green, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>⬇ CSV</button>
-                    <button onClick={downloadMonthlyPDF} style={{ height: 34, padding: "0 16px", borderRadius: 8, border: "none", background: C.red, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>⬇ PDF</button>
+                    <button onClick={downloadMonthlyCSV} style={{ height: 38, padding: "0 18px", borderRadius: 8, border: "none", background: C.green, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬇ CSV</button>
+                    <button onClick={downloadMonthlyPDF} style={{ height: 38, padding: "0 18px", borderRadius: 8, border: "none", background: C.red, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬇ PDF</button>
                   </>
                 )}
-                <button onClick={() => { setReportPlasticCat(""); setReportSub(""); setReportBatch(""); setReportSegment(""); }} style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", color: C.textMuted }}>Reset Filters</button>
+                <button onClick={() => { setReportPlasticCat(""); setReportSub(""); setReportBatch(""); setReportSegment(""); }} style={{ height: 38, padding: "0 14px", borderRadius: 8, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", color: C.textMuted }}>Reset Filters</button>
               </div>
             </div>
 
             {!reportMonth || monthlyData.length === 0 ? (
-              <div style={{ padding: "24px", textAlign: "center", color: C.textFaint, fontSize: 13, background: C.surface, borderRadius: 10 }}>{!reportMonth ? "Please select a target month to view the data timeline." : "No entries match this filter profile."}</div>
+              <div style={{ padding: "32px", textAlign: "center", color: C.textFaint, fontSize: 14, background: C.surface, borderRadius: 10 }}>{!reportMonth ? "Please select a target month to view the data timeline." : "No entries match this filter profile."}</div>
             ) : (
               <BaseTable headers={["Date", "Plastic Type", "Sub Product", "Opening", "Received", "Consumed", "Damaged", "Moved", "Closing"]} rightAlignIndex={2}>
                 {monthlyData.map((r, i) => (
-                  <tr key={i} style={{ borderBottom: `1px solid ${C.border}`, background: i % 2 === 0 ? "#fff" : C.surface, fontSize: 11 }}>
-                    <td style={{ padding: "9px 12px", fontFamily: "monospace", color: C.text, fontWeight: 600 }}>{fmtDate(r.date)}</td>
-                    <td style={{ padding: "9px 12px", color: C.textMid }}>{r.plasticCategory}</td>
-                    <td style={{ padding: "9px 12px", color: C.textMuted }}>{r.subProduct}</td>
+                  <tr key={i} style={{ borderBottom: `1px solid ${C.border}`, background: i % 2 === 0 ? "#fff" : C.surface, fontSize: 13 }}>
+                    <td style={{ padding: "11px 14px", fontFamily: "monospace", color: C.text, fontWeight: 600 }}>{fmtDate(r.date)}</td>
+                    <td style={{ padding: "11px 14px", color: C.textMid }}>{r.plasticCategory}</td>
+                    <td style={{ padding: "11px 14px", color: C.textMuted }}>{r.subProduct}</td>
                     {[r.opening, r.received, r.consumed, r.damaged, r.moved, r.closing].map((v, j) => (
-                      <td key={j} style={{ padding: "9px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: j === 1 ? C.green : j === 5 && v < 0 ? C.red : C.text }}>{fmt(v)}</td>
+                      <td key={j} style={{ padding: "11px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: j === 1 ? C.green : j === 5 && v < 0 ? C.red : C.text }}>{fmt(v)}</td>
                     ))}
                   </tr>
                 ))}
                 <tr style={{ background: C.surface, borderTop: `2px solid ${C.borderStrong}`, fontWeight: 700 }}>
-                  <td style={{ padding: "9px 12px" }}>TOTAL</td>
-                  <td colSpan={2} style={{ padding: "9px 12px", color: C.textFaint }}>—</td>
-                  <td style={{ padding: "9px 12px", textAlign: "right", color: C.textFaint }}>—</td>
+                  <td style={{ padding: "11px 14px", fontSize: 13 }}>TOTAL</td>
+                  <td colSpan={2} style={{ padding: "11px 14px", color: C.textFaint }}>—</td>
+                  <td style={{ padding: "11px 14px", textAlign: "right", color: C.textFaint }}>—</td>
                   {["received", "consumed", "damaged", "moved"].map(k => (
-                    <td key={k} style={{ padding: "9px 12px", textAlign: "right", fontFamily: "monospace", color: C.text }}>{fmt(monthlyData.reduce((s, r) => s + r[k], 0))}</td>
+                    <td key={k} style={{ padding: "11px 14px", textAlign: "right", fontFamily: "monospace", fontSize: 13, color: C.text }}>{fmt(monthlyData.reduce((s, r) => s + r[k], 0))}</td>
                   ))}
-                  <td style={{ padding: "9px 12px", textAlign: "right", color: C.textFaint }}>—</td>
+                  <td style={{ padding: "11px 14px", textAlign: "right", color: C.textFaint }}>—</td>
                 </tr>
               </BaseTable>
             )}
@@ -1256,48 +1186,48 @@ footerRow: [
 
       {activeReport === "audit" && (
         <Card style={{ marginBottom: 24 }}>
-          <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+          <div style={{ padding: "18px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: C.amber }}>🔍 Daily Audit Report</div>
-              <div style={{ fontSize: 11, color: C.textFaint, marginTop: 2 }}>Production · Issuance · Return · Damage · Closing</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: C.amber }}>🔍 Daily Audit Report</div>
+              <div style={{ fontSize: 12, color: C.textFaint, marginTop: 3 }}>Production · Issuance · Return · Damage · Closing</div>
             </div>
             {auditData.length > 0 && (
-              <div style={{ display: "flex", gap: 6 }}>
-                <button onClick={downloadAuditCSV} style={{ height: 34, padding: "0 16px", borderRadius: 8, border: "none", background: C.green, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>⬇ CSV</button>
-                <button onClick={downloadAuditPDF} style={{ height: 34, padding: "0 16px", borderRadius: 8, border: "none", background: C.red, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>⬇ PDF</button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={downloadAuditCSV} style={{ height: 38, padding: "0 18px", borderRadius: 8, border: "none", background: C.green, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬇ CSV</button>
+                <button onClick={downloadAuditPDF} style={{ height: 38, padding: "0 18px", borderRadius: 8, border: "none", background: C.red, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬇ PDF</button>
               </div>
             )}
           </div>
-          <div style={{ padding: 20 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 20 }}>
+          <div style={{ padding: 24 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 20 }}>
               {[["Total Consumed", totalCons, C.red], ["Total Damaged", totalDmg, C.amber], ["Total Moved", totalMov, C.orange]].map(([l, v, c]) => (
                 <StatBox key={l} label={l} value={v} color={c} />
               ))}
             </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 16 }}>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 20 }}>
               <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", border: `1.5px solid ${C.border}` }}>
                 {[["ALL", "Both"], ["KHI", "🏙️ KHI"], ["LHE", "🌆 LHE"]].map(([v, l]) => (
-                  <div key={v} onClick={() => setFSite(v)} style={{ height: 34, padding: "0 12px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 11, fontWeight: 600, background: fSite === v ? C.navy : "#fff", color: fSite === v ? "#fff" : C.textMid }}>{l}</div>
+                  <div key={v} onClick={() => setFSite(v)} style={{ height: 38, padding: "0 14px", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 12, fontWeight: 600, background: fSite === v ? C.navy : "#fff", color: fSite === v ? "#fff" : C.textMid }}>{l}</div>
                 ))}
               </div>
               {[["Card Type", fCT, setFCT, ["", "DEBIT", "CREDIT"], ["All", "DEBIT", "CREDIT"]], ["Segment", fSeg, setFSeg, ["", "NTB", "ETB", "RENEWAL"], ["All", "NTB", "ETB", "RENEWAL"]], ["Inv Type", fInv, setFInv, ["", "PLASTIC", "MAILER", "ENVELOPE"], ["All", "PLASTIC", "MAILER", "ENVELOPE"]]].map(([lbl, v, s, opts, labels]) => (
                 <FormField key={lbl} label={lbl}>
-                  <select value={v} onChange={e => s(e.target.value)} style={{ height: 34, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 10px", fontSize: 12, outline: "none" }}>
+                  <select value={v} onChange={e => s(e.target.value)} style={{ height: 38, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 12px", fontSize: 13, outline: "none" }}>
                     {labels.map((l, i) => <option key={i} value={opts[i]}>{l}</option>)}
                   </select>
                 </FormField>
               ))}
               {[["From", fFrom, setFFrom], ["To", fTo, setFTo]].map(([lbl, v, s]) => (
-                <FormField key={lbl} label={lbl}><input type="date" value={v} onChange={e => s(e.target.value)} style={{ height: 34, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 10px", fontSize: 12, outline: "none" }} /></FormField>
+                <FormField key={lbl} label={lbl}><input type="date" value={v} onChange={e => s(e.target.value)} style={{ height: 38, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 12px", fontSize: 13, outline: "none" }} /></FormField>
               ))}
-              <button onClick={() => { setFCT(""); setFSeg(""); setFInv(""); setFBatch(""); setFFrom(""); setFTo(""); setFSite("ALL"); }} style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", color: C.textMuted }}>Clear</button>
+              <button onClick={() => { setFCT(""); setFSeg(""); setFInv(""); setFBatch(""); setFFrom(""); setFTo(""); setFSite("ALL"); }} style={{ height: 38, padding: "0 14px", borderRadius: 8, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", color: C.textMuted }}>Clear</button>
             </div>
 
             {auditData.length === 0 ? (
-              <div style={{ padding: 24, textAlign: "center", color: C.textFaint, fontSize: 13, background: C.surface, borderRadius: 10 }}>No entries match the selected filters.</div>
+              <div style={{ padding: 32, textAlign: "center", color: C.textFaint, fontSize: 14, background: C.surface, borderRadius: 10 }}>No entries match the selected filters.</div>
             ) : (
               <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${C.border}` }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 10 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                   <thead>
                     <tr style={{ background: C.navy }}>
                       {[
@@ -1306,7 +1236,7 @@ footerRow: [
                         "Daily Return Issuance", "Return Extra Issuance", "Total Return Issuance",
                         "Physical Damaged Cards", "Total Plastic Production", "Total Plastic Consumption", "Closing Production Status",
                       ].map((h, i) => (
-                        <th key={i} style={{ padding: "8px 10px", color: "rgba(255,255,255,.75)", fontSize: 8, fontWeight: 700, textTransform: "uppercase", textAlign: i > 0 ? "right" : "left", whiteSpace: "nowrap" }}>{h}</th>
+                        <th key={i} style={{ padding: "10px 12px", color: "rgba(255,255,255,.85)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", textAlign: i > 0 ? "right" : "left", whiteSpace: "nowrap" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -1322,20 +1252,20 @@ footerRow: [
 
                       return (
                         <tr key={idx} style={{ borderBottom: `1px solid ${C.border}`, background: idx % 2 === 0 ? "#fff" : C.surface }}>
-                          <td style={{ padding: "8px 10px", fontWeight: 600, color: C.text, whiteSpace: "nowrap" }}>{row.plasticCategory}</td>
-                          <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "monospace", color: C.textMid }}>{fmt(row.opening)}</td>
-                          <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "monospace", color: C.blue }}>{fmt(row.batchCount)}</td>
-                          <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.navy }}>{fmt(totalStatusProduction)}</td>
-                          <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "monospace", color: C.blue }}>{fmt(row.issuanceBatch)}</td>
-                          <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "monospace", color: C.purple }}>{fmt(row.extraCount)}</td>
-                          <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.text, background: C.greenLight }}>{fmt(totalIssuanceCard)}</td>
-                          <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "monospace", color: C.textFaint }}>—</td>
-                          <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "monospace", color: C.green }}>{fmt(returnExtra)}</td>
-                          <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.green }}>{fmt(totalReturnIssuance)}</td>
-                          <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "monospace", color: row.damaged > 0 ? C.red : C.border }}>{row.damaged > 0 ? fmt(row.damaged) : "—"}</td>
-                          <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.text }}>{fmt(totalPlasticProduction)}</td>
-                          <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "monospace", color: C.amber }}>{fmt(totalPlasticConsumption)}</td>
-                          <td style={{ padding: "8px 10px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.navy, background: C.greenLight }}>{fmt(closingProductionStatus)}</td>
+                          <td style={{ padding: "10px 12px", fontWeight: 600, color: C.text, whiteSpace: "nowrap" }}>{row.plasticCategory}</td>
+                          <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", color: C.textMid }}>{fmt(row.opening)}</td>
+                          <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", color: C.blue }}>{fmt(row.batchCount)}</td>
+                          <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.navy }}>{fmt(totalStatusProduction)}</td>
+                          <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", color: C.blue }}>{fmt(row.issuanceBatch)}</td>
+                          <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", color: C.purple }}>{fmt(row.extraCount)}</td>
+                          <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.text, background: C.greenLight }}>{fmt(totalIssuanceCard)}</td>
+                          <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", color: C.textFaint }}>—</td>
+                          <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", color: C.green }}>{fmt(returnExtra)}</td>
+                          <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.green }}>{fmt(totalReturnIssuance)}</td>
+                          <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", color: row.damaged > 0 ? C.red : C.border }}>{row.damaged > 0 ? fmt(row.damaged) : "—"}</td>
+                          <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.text }}>{fmt(totalPlasticProduction)}</td>
+                          <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", color: C.amber }}>{fmt(totalPlasticConsumption)}</td>
+                          <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.navy, background: C.greenLight }}>{fmt(closingProductionStatus)}</td>
                         </tr>
                       );
                     })}
@@ -1364,9 +1294,9 @@ footerRow: [
                         }, { opening: 0, batchCount: 0, totalStatusProduction: 0, issuanceBatch: 0, extraCount: 0, totalIssuanceCard: 0, returnExtra: 0, totalReturnIssuance: 0, damaged: 0, totalPlasticProduction: 0, totalPlasticConsumption: 0, closingProductionStatus: 0 });
 
                         return [
-                          <td key="label" style={{ padding: "10px 10px", fontSize: 10, fontWeight: 700, color: "#fff" }}>TOTAL</td>,
+                          <td key="label" style={{ padding: "12px 12px", fontSize: 12, fontWeight: 700, color: "#fff" }}>TOTAL</td>,
                           ...[totals.opening, totals.batchCount, totals.totalStatusProduction, totals.issuanceBatch, totals.extraCount, totals.totalIssuanceCard, 0, totals.returnExtra, totals.totalReturnIssuance, totals.damaged, totals.totalPlasticProduction, totals.totalPlasticConsumption, totals.closingProductionStatus].map((v, i) => (
-                            <td key={i} style={{ padding: "10px 10px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 11, color: i === 6 ? "rgba(255,255,255,.4)" : "#fff" }}>{i === 6 ? "—" : fmt(v)}</td>
+                            <td key={i} style={{ padding: "12px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 12, color: i === 6 ? "rgba(255,255,255,.4)" : "#fff" }}>{i === 6 ? "—" : fmt(v)}</td>
                           ))
                         ];
                       })()}
@@ -1381,38 +1311,38 @@ footerRow: [
 
       {activeReport === "range" && (
         <Card style={{ marginBottom: 24 }}>
-          <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+          <div style={{ padding: "18px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: C.purple }}>📊 Range Report — KHI + LHR (All Sites)</div>
-              <div style={{ fontSize: 11, color: C.textFaint, marginTop: 2 }}>Opening · Stock Received · Consumption · Closing — DEBIT + CREDIT</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: C.purple }}>📊 Range Report — KHI + LHR (All Sites)</div>
+              <div style={{ fontSize: 12, color: C.textFaint, marginTop: 3 }}>Opening · Stock Received · Consumption · Closing — DEBIT + CREDIT</div>
             </div>
             {rangeData.length > 0 && (
-              <div style={{ display: "flex", gap: 6 }}>
-                <button onClick={downloadRangeCSV} style={{ height: 34, padding: "0 16px", borderRadius: 8, border: "none", background: C.green, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>⬇ CSV</button>
-                <button onClick={downloadRangePDF} style={{ height: 34, padding: "0 16px", borderRadius: 8, border: "none", background: C.red, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>⬇ PDF</button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={downloadRangeCSV} style={{ height: 38, padding: "0 18px", borderRadius: 8, border: "none", background: C.green, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬇ CSV</button>
+                <button onClick={downloadRangePDF} style={{ height: 38, padding: "0 18px", borderRadius: 8, border: "none", background: C.red, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬇ PDF</button>
               </div>
             )}
           </div>
 
-          <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end", background: C.surface }}>
+          <div style={{ padding: "16px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end", background: C.surface }}>
             {[["From", rangeFrom, setRangeFrom], ["To", rangeTo, setRangeTo]].map(([lbl, v, s]) => (
-              <div key={lbl} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                <label style={{ fontSize: 10, fontWeight: 600, color: C.textFaint, textTransform: "uppercase" }}>{lbl}</label>
-                <input type="date" value={v} onChange={e => s(e.target.value)} style={{ height: 34, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 10px", fontSize: 12, outline: "none" }} />
+              <div key={lbl} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: "uppercase" }}>{lbl}</label>
+                <input type="date" value={v} onChange={e => s(e.target.value)} style={{ height: 38, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 12px", fontSize: 13, outline: "none" }} />
               </div>
             ))}
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <label style={{ fontSize: 10, fontWeight: 600, color: C.textFaint, textTransform: "uppercase" }}>Plastic Type</label>
-              <select value={rangeCat} onChange={e => setRangeCat(e.target.value)} style={{ height: 34, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 10px", fontSize: 12, outline: "none", minWidth: 180 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: "uppercase" }}>Plastic Type</label>
+              <select value={rangeCat} onChange={e => setRangeCat(e.target.value)} style={{ height: 38, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 12px", fontSize: 13, outline: "none", minWidth: 200 }}>
                 <option value="">— All Types —</option>
                 {rangePlasticCats.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <button onClick={() => { setRangeFrom(""); setRangeTo(""); setRangeCat(""); }} style={{ height: 34, padding: "0 12px", borderRadius: 8, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", color: C.textMuted, alignSelf: "flex-end" }}>Clear</button>
+            <button onClick={() => { setRangeFrom(""); setRangeTo(""); setRangeCat(""); }} style={{ height: 38, padding: "0 14px", borderRadius: 8, border: `1.5px solid ${C.border}`, background: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", color: C.textMuted, alignSelf: "flex-end" }}>Clear</button>
           </div>
 
           {rangeData.length > 0 && (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, padding: "14px 20px", borderBottom: `1px solid ${C.border}`, background: C.surfaceAlt }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, padding: "16px 24px", borderBottom: `1px solid ${C.border}`, background: C.surfaceAlt }}>
               {[["Opening", rangeTotals.opening, C.textMid], ["Stock Received", rangeTotals.received, C.green], ["Consumption", rangeTotals.consumed, C.red], ["Closing", rangeTotals.closing, C.navy]].map(([l, v, c]) => (
                 <StatBox key={l} label={l} value={v} color={c} />
               ))}
@@ -1420,16 +1350,16 @@ footerRow: [
           )}
 
           {!rangeFrom && !rangeTo
-            ? <div style={{ padding: 36, textAlign: "center", color: C.textFaint, fontSize: 13, background: C.surface }}>Select a date range to generate the report.</div>
+            ? <div style={{ padding: 40, textAlign: "center", color: C.textFaint, fontSize: 14, background: C.surface }}>Select a date range to generate the report.</div>
             : rangeData.length === 0
-              ? <div style={{ padding: 36, textAlign: "center", color: C.textFaint, fontSize: 13 }}>No entries found for selected range.</div>
+              ? <div style={{ padding: 40, textAlign: "center", color: C.textFaint, fontSize: 14 }}>No entries found for selected range.</div>
               : (
                 <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                     <thead>
                       <tr style={{ background: C.navy }}>
                         {["Code", "Product", "Opening", "Stock Received", "Consumption", "Closing"].map((h, i) => (
-                          <th key={i} style={{ padding: "9px 12px", color: "rgba(255,255,255,.7)", fontSize: 9, fontWeight: 700, textTransform: "uppercase", textAlign: i > 1 ? "right" : "left" }}>{h}</th>
+                          <th key={i} style={{ padding: "12px 14px", color: "rgba(255,255,255,.85)", fontSize: 11, fontWeight: 700, textTransform: "uppercase", textAlign: i > 1 ? "right" : "left" }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -1440,26 +1370,26 @@ footerRow: [
                         return Object.entries(groups).map(([ct, rows]) => (
                           <React.Fragment key={ct}>
                             <tr style={{ background: "#334155" }}>
-                              <td colSpan={6} style={{ padding: "6px 12px", fontSize: 10, fontWeight: 700, color: "#fff" }}>
+                              <td colSpan={6} style={{ padding: "8px 14px", fontSize: 12, fontWeight: 700, color: "#fff" }}>
                                 {ct === "DEBIT" ? "💳" : "💎"} {ct} CARDS
                               </td>
                             </tr>
                             {rows.map((row, idx) => (
                               <tr key={idx} style={{ borderBottom: `1px solid ${C.border}`, background: idx % 2 === 0 ? "#fff" : C.surface }}>
-                                <td style={{ padding: "8px 12px", fontSize: 10, color: C.textMuted }}>{row.cardType}</td>
-                                <td style={{ padding: "8px 12px", fontWeight: 600, color: C.text }}>{row.plasticCategory}</td>
-                                <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", color: C.textMid }}>{fmt(row.opening)}</td>
-                                <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", color: row.received > 0 ? C.green : C.border }}>{row.received > 0 ? fmt(row.received) : "—"}</td>
-                                <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: C.red }}>{fmt(row.consumed)}</td>
-                                <td style={{ padding: "8px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.navy, background: C.greenLight }}>{fmt(row.closing)}</td>
+                                <td style={{ padding: "10px 14px", fontSize: 12, color: C.textMuted }}>{row.cardType}</td>
+                                <td style={{ padding: "10px 14px", fontWeight: 600, color: C.text }}>{row.plasticCategory}</td>
+                                <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", color: C.textMid }}>{fmt(row.opening)}</td>
+                                <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", color: row.received > 0 ? C.green : C.border }}>{row.received > 0 ? fmt(row.received) : "—"}</td>
+                                <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: C.red }}>{fmt(row.consumed)}</td>
+                                <td style={{ padding: "10px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.navy, background: C.greenLight }}>{fmt(row.closing)}</td>
                               </tr>
                             ))}
                             <tr style={{ background: C.surface, borderTop: `1px solid ${C.borderStrong}` }}>
-                              <td colSpan={2} style={{ padding: "7px 12px", fontSize: 10, fontWeight: 700, color: C.text }}>↳ {ct} subtotal</td>
-                              <td style={{ padding: "7px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.textMid }}>{fmt(rows.reduce((s, r) => s + r.opening, 0))}</td>
-                              <td style={{ padding: "7px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.green }}>{fmt(rows.reduce((s, r) => s + r.received, 0))}</td>
-                              <td style={{ padding: "7px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.red }}>{fmt(rows.reduce((s, r) => s + r.consumed, 0))}</td>
-                              <td style={{ padding: "7px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.navy, background: C.greenLight }}>{fmt(rows.reduce((s, r) => s + r.closing, 0))}</td>
+                              <td colSpan={2} style={{ padding: "9px 14px", fontSize: 12, fontWeight: 700, color: C.text }}>↳ {ct} subtotal</td>
+                              <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.textMid }}>{fmt(rows.reduce((s, r) => s + r.opening, 0))}</td>
+                              <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.green }}>{fmt(rows.reduce((s, r) => s + r.received, 0))}</td>
+                              <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.red }}>{fmt(rows.reduce((s, r) => s + r.consumed, 0))}</td>
+                              <td style={{ padding: "9px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: C.navy, background: C.greenLight }}>{fmt(rows.reduce((s, r) => s + r.closing, 0))}</td>
                             </tr>
                           </React.Fragment>
                         ));
@@ -1467,11 +1397,11 @@ footerRow: [
                     </tbody>
                     <tfoot>
                       <tr style={{ background: C.navy }}>
-                        <td colSpan={2} style={{ padding: "10px 12px", fontSize: 11, fontWeight: 700, color: "#fff" }}>TOTAL — {rangeData.length} products</td>
-                        <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 12, color: "#fff" }}>{fmt(rangeTotals.opening)}</td>
-                        <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 12, color: "#34D399" }}>{fmt(rangeTotals.received)}</td>
-                        <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 12, color: "#F87171" }}>{fmt(rangeTotals.consumed)}</td>
-                        <td style={{ padding: "10px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 13, color: "#34D399" }}>{fmt(rangeTotals.closing)}</td>
+                        <td colSpan={2} style={{ padding: "12px 14px", fontSize: 13, fontWeight: 700, color: "#fff" }}>TOTAL — {rangeData.length} products</td>
+                        <td style={{ padding: "12px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 13, color: "#fff" }}>{fmt(rangeTotals.opening)}</td>
+                        <td style={{ padding: "12px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 13, color: "#34D399" }}>{fmt(rangeTotals.received)}</td>
+                        <td style={{ padding: "12px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 13, color: "#F87171" }}>{fmt(rangeTotals.consumed)}</td>
+                        <td style={{ padding: "12px 14px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 14, color: "#34D399" }}>{fmt(rangeTotals.closing)}</td>
                       </tr>
                     </tfoot>
                   </table>

@@ -12,6 +12,7 @@ const requireAuth = require("./middleware/auth");
 const authRoutes = require("./routes/auth");
 const entryRoutes = require("./routes/entries");
 const closingBalanceRoutes = require("./routes/closingBalances");
+const userRoutes = require("./routes/users"); 
 const orderRoutes = require("./routes/order");
 const bulkEntries = require("./routes/Bulkentryroute")(db);
 
@@ -32,11 +33,11 @@ app.use(session({
   },
 }));
 
-// const loginLimiter = rateLimit({
-//   windowMs: 15 * 60 * 1000,
-//   max: 10,
-//   message: { error: "Too many login attempts. Try again later." },
-// });
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: "Too many login attempts. Try again later." },
+});
 
 // Public
 app.use("/api/auth", authRoutes);
@@ -46,6 +47,7 @@ app.use("/api/entries", requireAuth, entryRoutes);
 app.use("/api/closing-balances", requireAuth, closingBalanceRoutes);
 app.use("/api", requireAuth, bulkEntries);
 app.use("/api/orders", requireAuth, orderRoutes);
+app.use("/api/users", requireAuth, userRoutes); 
 app.use("/api/transit-records", requireAuth, require("./routes/transitRecords"));
 app.use("/api/consumables-stock", requireAuth, require("./routes/consumables"));
 

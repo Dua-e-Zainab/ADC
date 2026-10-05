@@ -14,7 +14,7 @@ const SCFG = {
   CRITICAL: { label: "Critical", color: C.red, bg: C.redLight, border: C.redBorder, icon: "🔴", desc: "<30 days" },
   WARNING: { label: "Warning", color: C.amber, bg: C.amberLight, border: C.amberBorder, icon: "🟡", desc: `<${ALERT_DAYS} days` },
   REORDER: { label: "Reorder", color: C.blue, bg: C.blueLight, border: C.blueBorder, icon: "🔵", desc: "PO needed" },
-  HEALTHY: { label: "Healthy", color: C.green, bg: C.greenLight, border: C.greenBorder, icon: "🟢", desc: "Stock OK" },
+  HEALTHY: { label: "Sufficient Stock", color: C.green, bg: C.greenLight, border: C.greenBorder, icon: "🟢", desc: "Stock sufficient" },
 };
 
 const btnBase = { height: 34, padding: "0 16px", borderRadius: 8, border: "none", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" };
@@ -33,6 +33,37 @@ export default function ForecastTab({ entries = [], closing, currentSite, orders
   const API = '/api/orders';
   const todayStr = today();
   const safeOrders = useMemo(() => orders || {}, [orders]);
+
+  // ─────────────────────────────────────────────────────────────────
+  // SELF-POLLING: fetch orders directly on mount and every 15s, instead
+  // of relying solely on whatever the parent (App.jsx) passed down via
+  // props. This guarantees ForecastTab always reflects the true DB
+  // state — including admin approvals that happened in a different
+  // browser/session — without requiring a manual page refresh, and
+  // without depending on App.jsx's own load timing being correct.
+  // ─────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchOrders = async () => {
+      try {
+        const res = await axios.get(API);
+        if (!cancelled && res.data && typeof res.data === "object") {
+          setOrders?.(res.data);
+        }
+      } catch (err) {
+        console.error("ForecastTab: failed to fetch orders:", err.response?.data || err.message);
+      }
+    };
+
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 15000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [setOrders]);
 
   // Extract unique YYYY-MM months from raw entries for the dropdown
   const availableMonths = useMemo(() => {
@@ -129,67 +160,65 @@ export default function ForecastTab({ entries = [], closing, currentSite, orders
   );
 
   // Dynamic row builder calculating month-wise days left based on daily burn rate of that month
-  // Dynamic row builder calculating month-wise days left based on daily burn rate of that month
-const forecastExportRows = useMemo(() => {
-  const getMonthlyDaysLeft = (rowKey, subProd, stockVal, yearMonth) => {
-    const monthEntries = entries.filter((e) => {
-      const eKey = `${e.subProduct || e.plasticCategory}_${e.scheme}_${e.invType}`;
-      const dateVal = e.date || e.createdAt || e.entryDate;
-      if (!dateVal) return false;
-      const ym = new Date(dateVal).toISOString().slice(0, 7);
-      return (eKey === rowKey || e.subProduct === subProd) && ym === yearMonth;
+  const forecastExportRows = useMemo(() => {
+    const getMonthlyDaysLeft = (rowKey, subProd, stockVal, yearMonth) => {
+      const monthEntries = entries.filter((e) => {
+        const eKey = `${e.subProduct || e.plasticCategory}_${e.scheme}_${e.invType}`;
+        const dateVal = e.date || e.createdAt || e.entryDate;
+        if (!dateVal) return false;
+        const ym = new Date(dateVal).toISOString().slice(0, 7);
+        return (eKey === rowKey || e.subProduct === subProd) && ym === yearMonth;
+      });
+
+      if (!monthEntries.length) return "—";
+
+      const totalIssued = monthEntries.reduce(
+        (sum, e) => sum + (Number(e.issued) || Number(e.qty) || Number(e.consumed) || 0),
+        0
+      );
+
+      const [year, month] = yearMonth.split("-").map(Number);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const avgDailyBurn = totalIssued / daysInMonth;
+
+      if (avgDailyBurn <= 0) return "∞";
+
+      const days = Math.round(stockVal / avgDailyBurn);
+      const months = (days / 30).toFixed(1);
+      return `${days} (${months} months)`;
+    };
+
+    return filtered.map((r) => {
+      const ord = safeOrders[r.key] || {};
+
+      const totalDaysLeftFormatted =
+        r.daysLeft != null ? `${r.daysLeft} (${(r.daysLeft / 30).toFixed(1)} months)` : "∞";
+
+      const baseRow = [
+        r.subProduct || r.plasticCategory,
+        r.scheme,
+        r.plasticCategory,
+        r.invType,
+        r.segment,
+        fmt(r.stock),
+        totalDaysLeftFormatted,
+        r.avgD30 || r.avgD90 || "—",
+        r.stockoutDate ? fmtDate(r.stockoutDate) : "Safe",
+        r.reorderDate ? fmtDate(r.reorderDate) : "OK",
+        r.recOrder > 0 ? fmt(r.recOrder) : "—",
+        ord.qty ? fmt(ord.qty) : "—",
+        ord.orderDate ? fmtDate(ord.orderDate) : "—",
+        SCFG[r.status]?.label || r.status,
+      ];
+
+      const monthsToCalculate = selectedMonth ? [selectedMonth] : availableMonths;
+      const monthlyDaysLeftValues = monthsToCalculate.map((ym) =>
+        getMonthlyDaysLeft(r.key, r.subProduct, r.stock, ym)
+      );
+
+      return [...baseRow, ...monthlyDaysLeftValues];
     });
-
-    if (!monthEntries.length) return "—";
-
-    const totalIssued = monthEntries.reduce(
-      (sum, e) => sum + (Number(e.issued) || Number(e.qty) || Number(e.consumed) || 0),
-      0
-    );
-
-    const [year, month] = yearMonth.split("-").map(Number);
-    const daysInMonth = new Date(year, month, 0).getDate();
-    const avgDailyBurn = totalIssued / daysInMonth;
-
-    if (avgDailyBurn <= 0) return "∞";
-
-    const days = Math.round(stockVal / avgDailyBurn);
-    const months = (days / 30).toFixed(1);
-    return `${days} (${months} months)`; // Formatted output
-  };
-
-  return filtered.map((r) => {
-    const ord = safeOrders[r.key] || {};
-
-    // Formats total Days Left into "X (Y months)"
-    const totalDaysLeftFormatted =
-      r.daysLeft != null ? `${r.daysLeft} (${(r.daysLeft / 30).toFixed(1)} months)` : "∞";
-
-    const baseRow = [
-      r.subProduct || r.plasticCategory,
-      r.scheme,
-      r.plasticCategory,
-      r.invType,
-      r.segment,
-      fmt(r.stock),
-      totalDaysLeftFormatted, // Updated value
-      r.avgD30 || r.avgD90 || "—",
-      r.stockoutDate ? fmtDate(r.stockoutDate) : "Safe",
-      r.reorderDate ? fmtDate(r.reorderDate) : "OK",
-      r.recOrder > 0 ? fmt(r.recOrder) : "—",
-      ord.qty ? fmt(ord.qty) : "—",
-      ord.orderDate ? fmtDate(ord.orderDate) : "—",
-      SCFG[r.status]?.label || r.status,
-    ];
-
-    const monthsToCalculate = selectedMonth ? [selectedMonth] : availableMonths;
-    const monthlyDaysLeftValues = monthsToCalculate.map((ym) =>
-      getMonthlyDaysLeft(r.key, r.subProduct, r.stock, ym)
-    );
-
-    return [...baseRow, ...monthlyDaysLeftValues];
-  });
-}, [filtered, safeOrders, entries, selectedMonth, availableMonths]);
+  }, [filtered, safeOrders, entries, selectedMonth, availableMonths]);
 
   const exportSuffix = selectedMonth ? `_${selectedMonth}` : `_${todayStr}`;
 
@@ -232,8 +261,10 @@ const forecastExportRows = useMemo(() => {
     };
 
     try {
-      await axios.post("/api/orders", newOrder);
-      setOrders?.(p => ({ ...p, [r.key]: newOrder }));
+      const res = await axios.post("/api/orders", newOrder);
+      // Backend decides the real approval status server-side (based on the
+      // session role) — reflect that, don't just assume the order shape we sent.
+      setOrders?.(p => ({ ...p, [r.key]: { ...newOrder, approvalStatus: res.data.approvalStatus } }));
       setOpenOrder(null);
     } catch (err) {
       console.error("Order save failed:", err.response?.data || err.message);
@@ -255,7 +286,8 @@ const forecastExportRows = useMemo(() => {
       await axios.post(API, { ...updated, key });
       setOrders?.(p => ({ ...p, [key]: updated }));
     } catch (err) {
-      console.error("Mark received failed:", err.message);
+      console.error("Mark received failed:", err.response?.data || err.message);
+      alert(err.response?.data?.error || "Failed to mark received");
     }
   }, [safeOrders, setOrders]);
 
@@ -435,7 +467,7 @@ const forecastExportRows = useMemo(() => {
           <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: C.textFaint, pointerEvents: "none" }}>⌕</span>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search product or scheme…" style={{ height: 34, width: "100%", border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 12px 0 28px", fontSize: 12, outline: "none", background: C.surface }} />
         </div>
-        
+
         {/* Month Filter Dropdown */}
         <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} style={{ height: 34, border: `1.5px solid ${C.border}`, borderRadius: 8, padding: "0 10px", fontSize: 12, outline: "none", background: selectedMonth ? C.blueLight : "#fff", color: selectedMonth ? C.blue : C.text }}>
           <option value="">All Months</option>
@@ -467,15 +499,19 @@ const forecastExportRows = useMemo(() => {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {filtered.map((r) => {
-            const scfg = SCFG[r.status];
-            const urgent = r.daysUntilReorder !== null && r.daysUntilReorder <= 0;
-            const soon = r.daysUntilReorder !== null && r.daysUntilReorder > 0 && r.daysUntilReorder <= 30;
             const ord = safeOrders[r.key] || {};
             const isPlaced = !!ord.placedAt && !ord.received;
+            // Once an order exists for this product — placed, whether still
+            // pending admin approval, approved, or received — it's being
+            // handled, so it's no longer shown as CRITICAL/WARNING/REORDER.
+            const effectiveStatus = isPlaced || ord.received ? "HEALTHY" : r.status;
+            const scfg = SCFG[effectiveStatus];
+            const urgent = r.daysUntilReorder !== null && r.daysUntilReorder <= 0;
+            const soon = r.daysUntilReorder !== null && r.daysUntilReorder > 0 && r.daysUntilReorder <= 30;
 
             return (
-              <div key={r.key} style={{ background: "#fff", border: `1.5px solid ${r.status !== "HEALTHY" ? scfg.border : C.border}`, borderRadius: 16, boxShadow: r.status === "CRITICAL" ? `0 2px 16px ${C.red}18` : r.status === "WARNING" ? `0 2px 12px ${C.amber}12` : "0 1px 4px rgba(0,0,0,.04)", overflow: "hidden" }}>
-                <div style={{ padding: "12px 18px", background: r.status !== "HEALTHY" ? `linear-gradient(90deg, ${scfg.bg} 0%, #fff 100%)` : C.surface, borderBottom: `1px solid ${r.status !== "HEALTHY" ? scfg.border : C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+              <div key={r.key} style={{ background: "#fff", border: `1.5px solid ${effectiveStatus !== "HEALTHY" ? scfg.border : C.border}`, borderRadius: 16, boxShadow: effectiveStatus === "CRITICAL" ? `0 2px 16px ${C.red}18` : effectiveStatus === "WARNING" ? `0 2px 12px ${C.amber}12` : "0 1px 4px rgba(0,0,0,.04)", overflow: "hidden" }}>
+                <div style={{ padding: "12px 18px", background: effectiveStatus !== "HEALTHY" ? `linear-gradient(90deg, ${scfg.bg} 0%, #fff 100%)` : C.surface, borderBottom: `1px solid ${effectiveStatus !== "HEALTHY" ? scfg.border : C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ width: 8, height: 8, borderRadius: "50%", background: scfg.color, boxShadow: `0 0 8px ${scfg.color}80`, flexShrink: 0 }} />
                     <div>
@@ -519,18 +555,7 @@ const forecastExportRows = useMemo(() => {
                     ))}
                   </div>
 
-                  {(r.status === "CRITICAL" || r.status === "WARNING" || r.status === "REORDER") && (() => {
-                    if (isPlaced) return (
-                      <div style={{ background: C.greenLight, border: `1px solid ${C.greenBorder}`, borderRadius: 8, padding: "8px 12px", marginBottom: 10, ...inlineFlex }}>
-                        <span style={{ fontSize: 11, color: C.green, fontWeight: 600 }}>✅ Order placed {ord.placedAt ? Math.floor((Date.now() - new Date(ord.placedAt)) / 86400000) : 0}d ago</span>
-                        <span style={{ fontSize: 11, color: C.textMid }}>
-                          Batch: <strong>{ord.batch || "—"}</strong> · Qty: <strong>{fmt(ord.qty || 0)}</strong>
-                          {ord.orderDate && <> · Ordered: <strong>{fmtDate(ord.orderDate)}</strong></>}
-                        </span>
-                        <button onClick={() => markReceived(r.key)} style={{ ...btnBase, height: 26, background: C.green, marginLeft: "auto" }}>✅ Received</button>
-                        <button onClick={() => clearOrder(r.key)} style={{ ...btnBase, height: 26, background: "#fff", color: C.green, border: `1px solid ${C.greenBorder}` }}>✕ Clear</button>
-                      </div>
-                    );
+                  {(effectiveStatus === "CRITICAL" || effectiveStatus === "WARNING" || effectiveStatus === "REORDER") && (() => {
                     if (openOrder === r.key) return (
                       <div style={{ background: C.blueLight, border: `1px solid ${C.blueBorder}`, borderRadius: 8, padding: "10px 12px", marginBottom: 10, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
                         {[
@@ -549,6 +574,37 @@ const forecastExportRows = useMemo(() => {
                     );
                     return (
                       <button onClick={() => setOpenOrder(r.key)} style={{ ...btnBase, height: 28, background: C.blueLight, color: C.blue, border: `1.5px solid ${C.blueBorder}`, marginBottom: 10 }}>Log Order</button>
+                    );
+                  })()}
+
+                  {/* Simplified order status pill — just the current word, no
+                      clutter, plus the two actions (Received / Clear) that
+                      apply to it. */}
+                  {isPlaced && (() => {
+                    if (ord.received) return (
+                      <div style={{ ...inlineFlex, background: C.greenLight, border: `1px solid ${C.greenBorder}`, borderRadius: 8, padding: "8px 12px", marginBottom: 10 }}>
+                        <span style={{ fontSize: 12, color: C.green, fontWeight: 700 }}>✅ Received</span>
+                      </div>
+                    );
+                    if (ord.approvalStatus === "PENDING") return (
+                      <div style={{ ...inlineFlex, background: C.amberLight, border: `1px solid ${C.amberBorder}`, borderRadius: 8, padding: "8px 12px", marginBottom: 10 }}>
+                        <span style={{ fontSize: 12, color: C.amber, fontWeight: 700 }}>⏳ Pending</span>
+                        <button onClick={() => clearOrder(r.key)} style={{ ...btnBase, height: 24, background: "#fff", color: C.amber, border: `1px solid ${C.amberBorder}`, marginLeft: "auto", fontSize: 10 }}>✕ Clear</button>
+                      </div>
+                    );
+                    if (ord.approvalStatus === "REJECTED") return (
+                      <div style={{ ...inlineFlex, background: C.redLight, border: `1px solid ${C.redBorder}`, borderRadius: 8, padding: "8px 12px", marginBottom: 10 }}>
+                        <span style={{ fontSize: 12, color: C.red, fontWeight: 700 }}>❌ Rejected</span>
+                        <button onClick={() => clearOrder(r.key)} style={{ ...btnBase, height: 24, background: "#fff", color: C.red, border: `1px solid ${C.redBorder}`, marginLeft: "auto", fontSize: 10 }}>✕ Clear</button>
+                      </div>
+                    );
+                    // APPROVED, not yet received
+                    return (
+                      <div style={{ ...inlineFlex, background: C.greenLight, border: `1px solid ${C.greenBorder}`, borderRadius: 8, padding: "8px 12px", marginBottom: 10 }}>
+                        <span style={{ fontSize: 12, color: C.green, fontWeight: 700 }}>✅ Approved</span>
+                        <button onClick={() => markReceived(r.key)} style={{ ...btnBase, height: 24, background: C.green, marginLeft: "auto", fontSize: 10 }}>Mark Received</button>
+                        <button onClick={() => clearOrder(r.key)} style={{ ...btnBase, height: 24, background: "#fff", color: C.green, border: `1px solid ${C.greenBorder}`, fontSize: 10 }}>✕ Clear</button>
+                      </div>
                     );
                   })()}
 
